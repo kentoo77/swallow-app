@@ -112,6 +112,33 @@
         @keyframes splashBreath { 0%{opacity:0.7;transform:scale(1)} 100%{opacity:1;transform:scale(1.02)} }
         .splash.hide { opacity: 0; visibility: hidden; pointer-events: none; display: none; }
 
+        /* === Login Screen === */
+        .login-container {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100%; padding: 40px 32px; text-align: center;
+        }
+        .login-bird { margin-bottom: 12px; }
+        .login-title {
+            font-family: 'Sora', sans-serif; font-size: 2rem; font-weight: 800;
+            letter-spacing: -0.03em; color: var(--ink);
+        }
+        .login-sub {
+            color: var(--ink-secondary); font-size: 0.9rem; margin-top: 4px; margin-bottom: 40px;
+        }
+        .login-google-btn {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            width: 100%; max-width: 280px; padding: 14px 24px;
+            background: var(--bg-white); border: 1px solid var(--divider);
+            border-radius: var(--radius-sm); font-size: 0.95rem; font-weight: 600;
+            color: var(--ink); cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s var(--smooth);
+        }
+        .login-google-btn:active { transform: scale(0.97); box-shadow: var(--shadow-xs); }
+        .login-note {
+            color: var(--ink-muted); font-size: 0.75rem; margin-top: 16px; line-height: 1.4;
+        }
+
         .splash-bird {
             width: 100px; height: 84px;
             animation: splashFloat 2.5s ease-in-out infinite alternate;
@@ -1110,6 +1137,9 @@
         .recommended-onboard-scroll::-webkit-scrollbar { display: none; }
         .recommended-onboard-btn-wrap { padding-top: 16px; position: relative; z-index: 1; }
     </style>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 <div class="phone-frame">
@@ -1138,6 +1168,20 @@
     <div class="splash-loader"></div>
 </div>
 <div class="app">
+    <!-- LOGIN -->
+    <div class="screen" id="loginScreen">
+        <div class="login-container">
+            <div class="login-bird"><svg viewBox="0 0 120 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:72px;height:60px"><ellipse cx="60" cy="52" rx="22" ry="18" fill="url(#birdGrad1)"/><ellipse cx="60" cy="55" rx="16" ry="12" fill="white" opacity="0.35"/><circle cx="74" cy="38" r="14" fill="url(#birdGrad2)"/><circle cx="79" cy="35" r="4.5" fill="white"/><circle cx="80" cy="34.5" r="2.5" fill="#262626"/><circle cx="81.5" cy="33.5" r="1" fill="white"/><path d="M86 38 L96 40 L86 43Z" fill="#e1306c"/><path d="M44 48 C32 36, 14 26, 2 22 C16 30, 28 38, 40 48Z" fill="#e1306c" opacity="0.3"/><path d="M72 46 C82 34, 96 24, 112 18 C98 28, 86 38, 76 46Z" fill="url(#birdGrad1)"/><path d="M40 58 C34 66, 26 76, 18 86 C28 78, 34 68, 40 60Z" fill="url(#birdGrad2)"/></svg></div>
+            <h1 class="login-title">Swallow</h1>
+            <p class="login-sub">英語リスニング学習アプリ</p>
+            <button class="login-google-btn" onclick="signInWithGoogle()">
+                <svg viewBox="0 0 24 24" width="20" height="20"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                Googleでログイン
+            </button>
+            <p class="login-note">ログインすると端末間でデータが同期されます</p>
+        </div>
+    </div>
+
     <!-- HEARING (初回のみ) -->
     <div class="screen hearing-screen" id="hearingScreen">
         <div class="hearing-header">
@@ -1224,6 +1268,7 @@
         <div class="settings-content">
             <div class="setting-group"><div class="setting-group-title">学習設定</div><div class="setting-item"><span class="setting-label">1日のフレーズ数</span><div class="phrase-selector" id="phraseSelector"><button class="phrase-option selected" data-count="1">1</button><button class="phrase-option" data-count="3">3</button><button class="phrase-option" data-count="5">5</button><button class="phrase-option" data-count="8">8</button></div></div></div>
             <div class="setting-group"><div class="setting-group-title">フォロー中の先生</div><div class="setting-item" onclick="showScreen('teachersScreen')"><span class="setting-label">先生を管理</span><span class="setting-value"><span id="followCountDisplay">1人</span><svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor"/></svg></span></div></div>
+            <div class="setting-group" id="logoutGroup" style="display:none"><div class="setting-group-title">アカウント</div><div class="setting-item"><span class="setting-label"><span id="userDisplayName"></span></span></div><div class="setting-item" onclick="signOut()"><span class="setting-label" style="color:var(--action)">ログアウト</span><span class="setting-value"><svg viewBox="0 0 24 24" style="fill:var(--action)"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg></span></div></div>
             <div class="setting-group"><div class="setting-group-title">データ管理</div><div class="setting-item" onclick="confirmResetData()"><span class="setting-label" style="color:#ef4444">学習データをリセット</span><span class="setting-value"><svg viewBox="0 0 24 24" style="fill:#ef4444"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></span></div></div>
         </div>
         <nav class="bottom-nav" id="navSettings"></nav>
@@ -1263,6 +1308,152 @@
 </div>
 
 <script>
+// ============================================================
+// Firebase Configuration
+// ============================================================
+var firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.firebasestorage.app",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+var db = firebase.firestore();
+var currentUser = null;
+
+// ============================================================
+// Auth helpers
+// ============================================================
+function signInWithGoogle(){
+    var provider = new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithPopup(provider).catch(function(err){
+        console.error('Login error:', err);
+        alert('ログインに失敗しました: ' + err.message);
+    });
+}
+function signOut(){
+    firebase.auth().signOut().then(function(){
+        currentUser = null;
+        showScreen('loginScreen');
+    });
+}
+function updateLoginUI(){
+    var el = document.getElementById('userDisplayName');
+    var logoutGroup = document.getElementById('logoutGroup');
+    if(currentUser && el) el.textContent = currentUser.displayName || currentUser.email || '';
+    if(logoutGroup) logoutGroup.style.display = currentUser ? '' : 'none';
+}
+
+// ============================================================
+// Firestore data helpers
+// ============================================================
+function fsDoc(path){ return db.doc('users/' + currentUser.uid + '/' + path); }
+
+function fsSet(path, data){
+    if(!currentUser) return Promise.resolve();
+    return fsDoc(path).set(data, {merge:true});
+}
+function fsGet(path){
+    if(!currentUser) return Promise.resolve(null);
+    return fsDoc(path).get().then(function(snap){ return snap.exists ? snap.data() : null; });
+}
+
+// Migrate localStorage to Firestore (runs once per user)
+function migrateLocalStorageToFirestore(uid){
+    var migrateKey = 'swallow_migrated_' + uid;
+    if(localStorage.getItem(migrateKey)) return Promise.resolve();
+
+    var batch = db.batch();
+    var hasData = false;
+
+    // hearing
+    var hearing = localStorage.getItem(HEARING_KEY);
+    if(hearing){ batch.set(db.doc('users/'+uid+'/settings/hearing'), {done:true, raw:hearing}, {merge:true}); hasData=true; }
+
+    // review data
+    var rev = localStorage.getItem(REVIEW_DATA_KEY);
+    if(rev){ try{ batch.set(db.doc('users/'+uid+'/data/reviews'), {items:JSON.parse(rev)}, {merge:true}); hasData=true; }catch(e){} }
+
+    // streak
+    var st = localStorage.getItem(STREAK_KEY);
+    if(st){ try{ batch.set(db.doc('users/'+uid+'/data/streak'), JSON.parse(st), {merge:true}); hasData=true; }catch(e){} }
+
+    // preferences (mute + daily count)
+    var prefs = {};
+    var muted = localStorage.getItem(MUTE_KEY);
+    if(muted !== null){ prefs.muted = muted === 'true'; hasData=true; }
+    var dc = localStorage.getItem(DAILY_COUNT_KEY);
+    if(dc !== null){ prefs.dailyCount = parseInt(dc,10); hasData=true; }
+    if(Object.keys(prefs).length) batch.set(db.doc('users/'+uid+'/settings/preferences'), prefs, {merge:true});
+
+    // following
+    var fol = localStorage.getItem(FOLLOWING_KEY);
+    if(fol){ try{ batch.set(db.doc('users/'+uid+'/settings/following'), {state:JSON.parse(fol)}, {merge:true}); hasData=true; }catch(e){} }
+
+    // hidden
+    var hid = localStorage.getItem(HIDDEN_KEY);
+    if(hid){ try{ batch.set(db.doc('users/'+uid+'/settings/hidden'), {state:JSON.parse(hid)}, {merge:true}); hasData=true; }catch(e){} }
+
+    // daily done keys
+    var dailyDone = {};
+    for(var i=0;i<localStorage.length;i++){
+        var k=localStorage.key(i);
+        if(k && k.indexOf('swallow_daily_')===0 && k!==DAILY_COUNT_KEY){
+            dailyDone[k]=localStorage.getItem(k); hasData=true;
+        }
+    }
+    if(Object.keys(dailyDone).length) batch.set(db.doc('users/'+uid+'/data/daily'), dailyDone, {merge:true});
+
+    if(!hasData){ localStorage.setItem(migrateKey,'1'); return Promise.resolve(); }
+
+    return batch.commit().then(function(){
+        localStorage.setItem(migrateKey,'1');
+    }).catch(function(e){ console.error('Migration error:', e); });
+}
+
+// Load all data from Firestore into local variables
+function loadAllFromFirestore(uid){
+    return Promise.all([
+        fsGet('data/reviews'),
+        fsGet('data/streak'),
+        fsGet('settings/preferences'),
+        fsGet('settings/following'),
+        fsGet('settings/hidden'),
+        fsGet('settings/hearing'),
+        fsGet('data/daily')
+    ]).then(function(results){
+        // reviews
+        if(results[0] && results[0].items) reviewData = results[0].items;
+        // streak
+        if(results[1]){ try{localStorage.setItem(STREAK_KEY,JSON.stringify(results[1]));}catch(e){} }
+        // preferences
+        if(results[2]){
+            if(typeof results[2].muted !== 'undefined'){ isMuted=results[2].muted; saveMuteStateLocal(isMuted); }
+            if(typeof results[2].dailyCount !== 'undefined'){ dailyCount=results[2].dailyCount; saveDailyCountLocal(dailyCount); }
+        }
+        // following
+        if(results[3] && results[3].state){
+            teachers.forEach(function(t){ if(results[3].state.hasOwnProperty(t.id)) t.following=results[3].state[t.id]; });
+            saveFollowingStateLocal();
+        }
+        // hidden
+        if(results[4] && results[4].state){ hiddenTeachers=results[4].state; saveHiddenTeachersLocal(); }
+        // hearing
+        if(results[5] && results[5].done){ try{localStorage.setItem(HEARING_KEY,'1');}catch(e){} }
+        // daily done
+        if(results[6]){
+            Object.keys(results[6]).forEach(function(k){
+                if(k.indexOf('swallow_daily_')===0) try{localStorage.setItem(k,results[6][k]);}catch(e){}
+            });
+        }
+    }).catch(function(e){ console.error('Firestore load error:', e); });
+}
+
+// ============================================================
+// Storage keys
+// ============================================================
 var HEARING_KEY='swallow_hearing_done';
 var REVIEW_DATA_KEY='swallow_review_data';
 var STREAK_KEY='swallow_streak';
@@ -1272,13 +1463,22 @@ var FOLLOWING_KEY='swallow_following';
 var HIDDEN_KEY='swallow_hidden';
 function getTodayKey(){var d=new Date();return 'swallow_daily_'+d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
 function isTodayDone(){try{return !!localStorage.getItem(getTodayKey());}catch(e){return false;}}
-function setTodayDone(){try{localStorage.setItem(getTodayKey(),'1');}catch(e){}}
+function setTodayDone(){
+    try{localStorage.setItem(getTodayKey(),'1');}catch(e){}
+    if(currentUser){
+        var obj={};obj[getTodayKey()]='1';
+        fsSet('data/daily',obj);
+    }
+}
 function getDateStr(d){return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
 function loadStreak(){
     try{var s=localStorage.getItem(STREAK_KEY);if(s)return JSON.parse(s);}catch(e){}
     return {count:0,lastDate:null};
 }
-function saveStreak(s){try{localStorage.setItem(STREAK_KEY,JSON.stringify(s));}catch(e){}}
+function saveStreak(s){
+    try{localStorage.setItem(STREAK_KEY,JSON.stringify(s));}catch(e){}
+    if(currentUser) fsSet('data/streak',s);
+}
 function updateStreak(){
     var s=loadStreak();
     var today=getDateStr(new Date());
@@ -1297,14 +1497,35 @@ function getStreakCount(){
     if(s.lastDate===getDateStr(yesterday))return s.count;
     return 0;
 }
+// Local-only helpers (used during Firestore load to avoid circular writes)
+function saveMuteStateLocal(m){try{localStorage.setItem(MUTE_KEY,m?'true':'false');}catch(e){}}
+function saveDailyCountLocal(c){try{localStorage.setItem(DAILY_COUNT_KEY,String(c));}catch(e){}}
+function saveFollowingStateLocal(){var f={};teachers.forEach(function(t){f[t.id]=t.following;});try{localStorage.setItem(FOLLOWING_KEY,JSON.stringify(f));}catch(e){}}
+function saveHiddenTeachersLocal(){try{localStorage.setItem(HIDDEN_KEY,JSON.stringify(hiddenTeachers));}catch(e){}}
+
 function loadMuteState(){try{var m=localStorage.getItem(MUTE_KEY);return m===null?true:m==='true';}catch(e){return true;}}
-function saveMuteState(m){try{localStorage.setItem(MUTE_KEY,m?'true':'false');}catch(e){}}
+function saveMuteState(m){
+    saveMuteStateLocal(m);
+    if(currentUser) fsSet('settings/preferences',{muted:m});
+}
 function loadDailyCount(){try{var c=localStorage.getItem(DAILY_COUNT_KEY);return c?parseInt(c,10):1;}catch(e){return 1;}}
-function saveDailyCount(c){try{localStorage.setItem(DAILY_COUNT_KEY,String(c));}catch(e){}}
+function saveDailyCount(c){
+    saveDailyCountLocal(c);
+    if(currentUser) fsSet('settings/preferences',{dailyCount:c});
+}
 function loadFollowingState(){try{var f=localStorage.getItem(FOLLOWING_KEY);if(f)return JSON.parse(f);}catch(e){}return null;}
-function saveFollowingState(){var f={};teachers.forEach(function(t){f[t.id]=t.following;});try{localStorage.setItem(FOLLOWING_KEY,JSON.stringify(f));}catch(e){}}
+function saveFollowingState(){
+    saveFollowingStateLocal();
+    if(currentUser){
+        var f={};teachers.forEach(function(t){f[t.id]=t.following;});
+        fsSet('settings/following',{state:f});
+    }
+}
 function loadHiddenTeachers(){try{var h=localStorage.getItem(HIDDEN_KEY);if(h)return JSON.parse(h);}catch(e){}return {};}
-function saveHiddenTeachers(){try{localStorage.setItem(HIDDEN_KEY,JSON.stringify(hiddenTeachers));}catch(e){}}
+function saveHiddenTeachers(){
+    saveHiddenTeachersLocal();
+    if(currentUser) fsSet('settings/hidden',{state:hiddenTeachers});
+}
 (function(){
     if(!localStorage.getItem(HEARING_KEY)){
         var h=document.getElementById('homeScreen'),g=document.getElementById('hearingScreen');
@@ -1332,11 +1553,36 @@ var phrases=[
     {teacher:'masaki',en:'(編集してください)',enPlain:'(編集してください)',ja:'(編集してください)',choices:['(編集してください)','(編集してください)','(編集してください)','(編集してください)'],correctIndex:0,category:'日常会話',video:'masaki2.MOV',explain:'<p>解説を編集してください。</p>',examples:[]},
     {teacher:'masaki',en:'(編集してください)',enPlain:'(編集してください)',ja:'(編集してください)',choices:['(編集してください)','(編集してください)','(編集してください)','(編集してください)'],correctIndex:0,category:'日常会話',video:'masaki3.MOV',explain:'<p>解説を編集してください。</p>',examples:[]}
 ];
+// GAS API URL — デプロイ後にここにURLを設定
+var GAS_API_URL = '';  // 例: 'https://script.google.com/macros/s/XXXX/exec'
+var fallbackPhrases = phrases.slice(); // ハードコードデータのバックアップ
+
+function fetchPhrasesFromAPI(){
+    if(!GAS_API_URL) return Promise.resolve();
+    return fetch(GAS_API_URL)
+        .then(function(res){ return res.json(); })
+        .then(function(data){
+            if(Array.isArray(data) && data.length > 0){
+                phrases = data;
+                console.log('GAS APIからフレーズデータを取得:', data.length, '件');
+            }
+        })
+        .catch(function(err){
+            console.warn('GAS APIエラー（ハードコードデータを使用）:', err);
+            phrases = fallbackPhrases;
+        });
+}
+// 起動時にAPIからフレーズ取得を試みる
+fetchPhrasesFromAPI().then(function(){ updateUI(); });
+
 var commentsData={},currentCommentIndex=0,dailyCount=loadDailyCount(),currentIndex=0,isAnimating=false,isMuted=loadMuteState(),checkedTeachers={};
 var prevScreen='homeScreen';
 var reviewData=[],reviewFilter='all';
 function loadReviewData(){try{var d=localStorage.getItem(REVIEW_DATA_KEY);if(d)reviewData=JSON.parse(d);}catch(e){}}
-function saveReviewData(){try{localStorage.setItem(REVIEW_DATA_KEY,JSON.stringify(reviewData));}catch(e){}}
+function saveReviewData(){
+    try{localStorage.setItem(REVIEW_DATA_KEY,JSON.stringify(reviewData));}catch(e){}
+    if(currentUser) fsSet('data/reviews',{items:reviewData});
+}
 var hiddenTeachers=loadHiddenTeachers();
 var hasInteractedWithRecommended=false;
 // Restore following state from localStorage
@@ -1372,9 +1618,11 @@ function updateHearingBtn(){
 }
 function completeHearing(){
     if(!hearingPurpose||!hearingLevel)return;
+    var hearingData = {purpose:hearingPurpose,level:hearingLevel,at:Date.now()};
     try{
-        localStorage.setItem(HEARING_KEY,JSON.stringify({purpose:hearingPurpose,level:hearingLevel,at:Date.now()}));
+        localStorage.setItem(HEARING_KEY,JSON.stringify(hearingData));
     }catch(e){}
+    if(currentUser) fsSet('settings/hearing',{done:true,raw:JSON.stringify(hearingData)});
     // Auto-follow top scoring teachers based on hearing
     var recs=getRecommendedTeachers();
     var topScore=recs.length>0?recs[0].score:0;
@@ -1812,6 +2060,12 @@ function confirmResetData(){
     reviewData=[];hiddenTeachers={};dailyCount=1;isMuted=true;
     teachers.forEach(function(t){t.following=(t.id==='masa');});
     saveMuteState(isMuted);saveDailyCount(dailyCount);saveFollowingState();saveHiddenTeachers();
+    if(currentUser){
+        fsSet('data/reviews',{items:[]});
+        fsSet('data/streak',{count:0,lastDate:null});
+        fsSet('data/daily',{});
+        fsSet('settings/hearing',{done:false});
+    }
     // Reset phrase selector UI
     var opts=document.querySelectorAll('.phrase-option');
     opts.forEach(function(b){b.classList.remove('selected');if(parseInt(b.dataset.count,10)===1)b.classList.add('selected');});
@@ -1822,17 +2076,53 @@ function confirmResetData(){
 loadReviewData();
 initHearing();
 renderAllNavs('homeScreen');updateUI();
-setTimeout(function(){
-    document.getElementById('splashScreen').classList.add('splash-flyaway');
+
+// Firebase Auth state observer — drives splash → login/home transition
+firebase.auth().onAuthStateChanged(function(user){
+    currentUser = user;
+    if(user){
+        // Migrate localStorage → Firestore on first login
+        migrateLocalStorageToFirestore(user.uid).then(function(){
+            return loadAllFromFirestore(user.uid);
+        }).then(function(){
+            updateUI();
+            dismissSplash();
+        });
+    } else {
+        dismissSplash();
+    }
+});
+
+var splashDismissed = false;
+function dismissSplash(){
+    if(splashDismissed) return;
+    splashDismissed = true;
+    var splash = document.getElementById('splashScreen');
+    if(!splash || splash.classList.contains('hide')){ afterSplash(); return; }
+    // ensure min display time
+    var elapsed = Date.now() - pageLoadTime;
+    var wait = Math.max(0, 1600 - elapsed);
     setTimeout(function(){
-        document.getElementById('splashScreen').classList.add('hide');
+        splash.classList.add('splash-flyaway');
+        setTimeout(function(){
+            splash.classList.add('hide');
+            afterSplash();
+        },600);
+    }, wait);
+}
+function afterSplash(){
+    if(currentUser){
         if(!localStorage.getItem(HEARING_KEY)){
             showScreen('hearingScreen');
         }else{
             showScreen('homeScreen');
         }
-    },600);
-},1600);
+        updateLoginUI();
+    } else {
+        showScreen('loginScreen');
+    }
+}
+var pageLoadTime = Date.now();
 </script>
 </body>
 </html>

@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swallow 管理画面</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f5f5f5;
+            --bg-white: #ffffff;
+            --ink: #262626;
+            --ink-secondary: #737373;
+            --ink-muted: #a8a8a8;
+            --divider: #efefef;
+            --action: #0095f6;
+            --action-hover: #1877f2;
+            --brand-purple: #833ab4;
+            --brand-coral: #e1306c;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --shadow-sm: 0 1px 4px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'DM Sans','Noto Sans JP',-apple-system,sans-serif;
+            background: var(--bg); color: var(--ink);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Header */
+        .admin-header {
+            background: var(--bg-white); border-bottom: 1px solid var(--divider);
+            padding: 16px 24px; display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .admin-logo {
+            font-family: 'Sora',sans-serif; font-size: 1.3rem; font-weight: 800;
+            letter-spacing: -0.03em; display: flex; align-items: center; gap: 8px;
+        }
+        .admin-logo span { color: var(--ink-muted); font-weight: 500; font-size: 0.85rem; }
+        .admin-actions { display: flex; gap: 8px; }
+
+        /* Buttons */
+        .btn {
+            padding: 8px 16px; border-radius: var(--radius-sm); border: none;
+            font-size: 0.85rem; font-weight: 600; cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .btn-primary { background: var(--action); color: #fff; }
+        .btn-primary:hover { background: var(--action-hover); }
+        .btn-secondary { background: var(--bg); color: var(--ink); border: 1px solid var(--divider); }
+        .btn-secondary:hover { background: var(--divider); }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-danger:hover { opacity: 0.9; }
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-sm { padding: 5px 10px; font-size: 0.78rem; }
+
+        /* Layout */
+        .admin-body { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+        /* Stats bar */
+        .stats-bar {
+            display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap;
+        }
+        .stat-card {
+            background: var(--bg-white); border-radius: var(--radius); padding: 16px 20px;
+            box-shadow: var(--shadow-sm); flex: 1; min-width: 140px;
+        }
+        .stat-card .stat-value {
+            font-size: 1.8rem; font-weight: 800; font-family: 'Sora',sans-serif;
+        }
+        .stat-card .stat-label { color: var(--ink-secondary); font-size: 0.8rem; margin-top: 2px; }
+
+        /* Filter bar */
+        .filter-bar {
+            display: flex; gap: 8px; margin-bottom: 16px; align-items: center; flex-wrap: wrap;
+        }
+        .filter-bar select, .filter-bar input {
+            padding: 8px 12px; border: 1px solid var(--divider); border-radius: var(--radius-sm);
+            font-size: 0.85rem; background: var(--bg-white);
+        }
+        .filter-bar input { flex: 1; min-width: 200px; }
+
+        /* Phrase table */
+        .phrase-table {
+            background: var(--bg-white); border-radius: var(--radius);
+            box-shadow: var(--shadow-sm); overflow: hidden;
+        }
+        .phrase-table table {
+            width: 100%; border-collapse: collapse; font-size: 0.85rem;
+        }
+        .phrase-table th {
+            text-align: left; padding: 12px 16px; background: var(--bg);
+            font-weight: 600; color: var(--ink-secondary); font-size: 0.78rem;
+            text-transform: uppercase; letter-spacing: 0.03em;
+            border-bottom: 1px solid var(--divider);
+        }
+        .phrase-table td {
+            padding: 12px 16px; border-bottom: 1px solid var(--divider);
+            vertical-align: middle;
+        }
+        .phrase-table tr:last-child td { border-bottom: none; }
+        .phrase-table tr:hover td { background: rgba(0,149,246,0.02); }
+
+        .badge {
+            display: inline-block; padding: 2px 8px; border-radius: 20px;
+            font-size: 0.72rem; font-weight: 600;
+        }
+        .badge-published { background: rgba(34,197,94,0.1); color: var(--success); }
+        .badge-draft { background: rgba(239,68,68,0.1); color: var(--danger); }
+        .badge-category { background: rgba(131,58,180,0.08); color: var(--brand-purple); }
+
+        .phrase-en { font-weight: 600; margin-bottom: 2px; }
+        .phrase-ja { color: var(--ink-secondary); font-size: 0.8rem; }
+
+        .action-btns { display: flex; gap: 4px; }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000;
+            display: none; align-items: center; justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: var(--bg-white); border-radius: var(--radius);
+            box-shadow: var(--shadow-md); width: 600px; max-width: 95vw;
+            max-height: 90vh; overflow-y: auto; padding: 24px;
+        }
+        .modal h2 {
+            font-family: 'Sora',sans-serif; font-size: 1.1rem; font-weight: 700;
+            margin-bottom: 16px;
+        }
+        .form-group { margin-bottom: 14px; }
+        .form-group label {
+            display: block; font-size: 0.78rem; font-weight: 600;
+            color: var(--ink-secondary); margin-bottom: 4px;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%; padding: 8px 12px; border: 1px solid var(--divider);
+            border-radius: var(--radius-sm); font-size: 0.85rem; font-family: inherit;
+        }
+        .form-group textarea { min-height: 80px; resize: vertical; }
+        .form-row { display: flex; gap: 12px; }
+        .form-row .form-group { flex: 1; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+
+        /* Preview panel */
+        .preview-panel {
+            background: #e8e8e8; border-radius: var(--radius); padding: 20px;
+            margin-top: 16px;
+        }
+        .preview-card {
+            background: var(--bg-white); border-radius: 16px; padding: 24px;
+            max-width: 350px; margin: 0 auto; box-shadow: var(--shadow-md);
+        }
+        .preview-card .pc-teacher {
+            font-size: 0.75rem; color: var(--ink-secondary); margin-bottom: 8px;
+        }
+        .preview-card .pc-en {
+            font-size: 1.1rem; font-weight: 700; line-height: 1.4; margin-bottom: 8px;
+        }
+        .preview-card .pc-en .hl {
+            background: rgba(131,58,180,0.12); padding: 1px 4px; border-radius: 4px;
+            color: var(--brand-purple);
+        }
+        .preview-card .pc-ja { color: var(--ink-secondary); font-size: 0.9rem; }
+
+        .empty-state {
+            text-align: center; padding: 48px 24px; color: var(--ink-muted);
+        }
+        .empty-state p { margin-top: 8px; }
+
+        @media (max-width: 768px) {
+            .admin-body { padding: 12px; }
+            .phrase-table { overflow-x: auto; }
+            .phrase-table table { min-width: 700px; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="admin-header">
+    <div class="admin-logo">Swallow <span>管理画面</span></div>
+    <div class="admin-actions">
+        <button class="btn btn-secondary" onclick="syncFromSpreadsheet()">スプレッドシート同期</button>
+        <button class="btn btn-primary" onclick="openAddModal()">+ 新規追加</button>
+    </div>
+</header>
+
+<div class="admin-body">
+    <div class="stats-bar">
+        <div class="stat-card"><div class="stat-value" id="statTotal">0</div><div class="stat-label">フレーズ合計</div></div>
+        <div class="stat-card"><div class="stat-value" id="statPublished">0</div><div class="stat-label">公開中</div></div>
+        <div class="stat-card"><div class="stat-value" id="statDraft">0</div><div class="stat-label">下書き</div></div>
+        <div class="stat-card"><div class="stat-value" id="statTeachers">0</div><div class="stat-label">先生数</div></div>
+    </div>
+
+    <div class="filter-bar">
+        <select id="filterTeacher" onchange="renderTable()">
+            <option value="">すべての先生</option>
+        </select>
+        <select id="filterCategory" onchange="renderTable()">
+            <option value="">すべてのカテゴリ</option>
+        </select>
+        <select id="filterStatus" onchange="renderTable()">
+            <option value="">すべてのステータス</option>
+            <option value="published">公開中</option>
+            <option value="draft">下書き</option>
+        </select>
+        <input type="text" id="filterSearch" placeholder="フレーズを検索..." oninput="renderTable()">
+    </div>
+
+    <div class="phrase-table">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:50px">#</th>
+                    <th>フレーズ</th>
+                    <th>先生</th>
+                    <th>カテゴリ</th>
+                    <th>ステータス</th>
+                    <th style="width:180px">操作</th>
+                </tr>
+            </thead>
+            <tbody id="phraseTableBody"></tbody>
+        </table>
+        <div class="empty-state" id="emptyState" style="display:none">
+            <p>フレーズがありません</p>
+        </div>
+    </div>
+</div>
+
+<!-- Edit / Add Modal -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal">
+        <h2 id="modalTitle">フレーズを編集</h2>
+        <input type="hidden" id="editIndex" value="-1">
+        <div class="form-row">
+            <div class="form-group">
+                <label>先生ID</label>
+                <select id="editTeacher">
+                    <option value="masa">まさ</option>
+                    <option value="miki">みき</option>
+                    <option value="masaki">まさき</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>カテゴリ</label>
+                <select id="editCategory">
+                    <option>日常会話</option><option>旅行</option><option>ビジネス</option>
+                    <option>レストラン</option><option>空港</option><option>ショッピング</option>
+                    <option>自己紹介</option><option>感情表現</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>英語（HTML可: &lt;span class="hl"&gt;...&lt;/span&gt;）</label>
+            <input type="text" id="editEn">
+        </div>
+        <div class="form-group">
+            <label>英語（プレーンテキスト）</label>
+            <input type="text" id="editEnPlain">
+        </div>
+        <div class="form-group">
+            <label>日本語訳</label>
+            <input type="text" id="editJa">
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>選択肢1（正解）</label><input type="text" id="editC0"></div>
+            <div class="form-group"><label>選択肢2</label><input type="text" id="editC1"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>選択肢3</label><input type="text" id="editC2"></div>
+            <div class="form-group"><label>選択肢4</label><input type="text" id="editC3"></div>
+        </div>
+        <div class="form-group">
+            <label>解説（HTML）</label>
+            <textarea id="editExplain"></textarea>
+        </div>
+        <div class="form-group">
+            <label>動画ファイル / URL</label>
+            <input type="text" id="editVideo">
+        </div>
+
+        <div class="preview-panel">
+            <h3 style="font-size:0.8rem;color:var(--ink-secondary);margin-bottom:8px;">プレビュー</h3>
+            <div class="preview-card">
+                <div class="pc-teacher" id="previewTeacher">まさ</div>
+                <div class="pc-en" id="previewEn"></div>
+                <div class="pc-ja" id="previewJa"></div>
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeModal()">キャンセル</button>
+            <button class="btn btn-primary" onclick="savePhrase()">保存</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// Data
+// ============================================================
+var GAS_API_URL = ''; // GAS APIのURL（設定後に入力）
+var adminPhrases = [];
+
+var teacherNames = {masa:'まさ', miki:'みき', masaki:'まさき'};
+
+// ============================================================
+// GAS API Sync
+// ============================================================
+function syncFromSpreadsheet(){
+    if(!GAS_API_URL){ alert('GAS_API_URL が未設定です。admin.html 内の GAS_API_URL を設定してください。'); return; }
+    fetch(GAS_API_URL)
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+            if(Array.isArray(data)){
+                adminPhrases = data.map(function(p,i){
+                    p._index = i;
+                    if(typeof p.published === 'undefined') p.published = true;
+                    return p;
+                });
+                saveToLocal();
+                renderTable();
+                alert('スプレッドシートから ' + data.length + ' 件を同期しました');
+            }
+        })
+        .catch(function(e){ alert('同期エラー: ' + e.message); });
+}
+
+// ============================================================
+// Local storage (admin data)
+// ============================================================
+function saveToLocal(){
+    try{ localStorage.setItem('swallow_admin_phrases', JSON.stringify(adminPhrases)); }catch(e){}
+}
+function loadFromLocal(){
+    try{
+        var d = localStorage.getItem('swallow_admin_phrases');
+        if(d) adminPhrases = JSON.parse(d);
+    }catch(e){}
+}
+
+// ============================================================
+// Render
+// ============================================================
+function renderTable(){
+    var tbody = document.getElementById('phraseTableBody');
+    var empty = document.getElementById('emptyState');
+    var fTeacher = document.getElementById('filterTeacher').value;
+    var fCategory = document.getElementById('filterCategory').value;
+    var fStatus = document.getElementById('filterStatus').value;
+    var fSearch = document.getElementById('filterSearch').value.toLowerCase();
+
+    var filtered = adminPhrases.filter(function(p){
+        if(fTeacher && p.teacher !== fTeacher) return false;
+        if(fCategory && p.category !== fCategory) return false;
+        if(fStatus === 'published' && !p.published) return false;
+        if(fStatus === 'draft' && p.published) return false;
+        if(fSearch){
+            var text = ((p.enPlain||'')+(p.ja||'')+(p.category||'')).toLowerCase();
+            if(text.indexOf(fSearch) === -1) return false;
+        }
+        return true;
+    });
+
+    if(filtered.length === 0){
+        tbody.innerHTML = '';
+        empty.style.display = '';
+    } else {
+        empty.style.display = 'none';
+        tbody.innerHTML = filtered.map(function(p, i){
+            var idx = adminPhrases.indexOf(p);
+            var statusBadge = p.published
+                ? '<span class="badge badge-published">公開</span>'
+                : '<span class="badge badge-draft">下書き</span>';
+            return '<tr>' +
+                '<td>' + (idx+1) + '</td>' +
+                '<td><div class="phrase-en">' + (p.enPlain||'') + '</div><div class="phrase-ja">' + (p.ja||'') + '</div></td>' +
+                '<td>' + (teacherNames[p.teacher]||p.teacher||'') + '</td>' +
+                '<td><span class="badge badge-category">' + (p.category||'') + '</span></td>' +
+                '<td>' + statusBadge + '</td>' +
+                '<td><div class="action-btns">' +
+                    '<button class="btn btn-sm btn-secondary" onclick="openEditModal('+idx+')">編集</button>' +
+                    '<button class="btn btn-sm ' + (p.published?'btn-secondary':'btn-success') + '" onclick="togglePublish('+idx+')">' + (p.published?'非公開':'公開') + '</button>' +
+                    '<button class="btn btn-sm btn-danger" onclick="deletePhrase('+idx+')">削除</button>' +
+                '</div></td>' +
+            '</tr>';
+        }).join('');
+    }
+
+    updateStats();
+    updateFilters();
+}
+
+function updateStats(){
+    document.getElementById('statTotal').textContent = adminPhrases.length;
+    var pub = adminPhrases.filter(function(p){ return p.published; }).length;
+    document.getElementById('statPublished').textContent = pub;
+    document.getElementById('statDraft').textContent = adminPhrases.length - pub;
+    var ts = {};
+    adminPhrases.forEach(function(p){ if(p.teacher) ts[p.teacher]=1; });
+    document.getElementById('statTeachers').textContent = Object.keys(ts).length;
+}
+
+function updateFilters(){
+    var tSel = document.getElementById('filterTeacher');
+    var cSel = document.getElementById('filterCategory');
+    var currentT = tSel.value, currentC = cSel.value;
+
+    var ts = {}, cs = {};
+    adminPhrases.forEach(function(p){
+        if(p.teacher) ts[p.teacher] = teacherNames[p.teacher]||p.teacher;
+        if(p.category) cs[p.category] = 1;
+    });
+
+    // Only rebuild if options changed
+    var tOpts = '<option value="">すべての先生</option>' +
+        Object.keys(ts).map(function(k){ return '<option value="'+k+'">'+ts[k]+'</option>'; }).join('');
+    var cOpts = '<option value="">すべてのカテゴリ</option>' +
+        Object.keys(cs).map(function(k){ return '<option value="'+k+'">'+k+'</option>'; }).join('');
+
+    if(tSel.innerHTML !== tOpts){ tSel.innerHTML = tOpts; tSel.value = currentT; }
+    if(cSel.innerHTML !== cOpts){ cSel.innerHTML = cOpts; cSel.value = currentC; }
+}
+
+// ============================================================
+// Actions
+// ============================================================
+function openAddModal(){
+    document.getElementById('modalTitle').textContent = '新規フレーズ追加';
+    document.getElementById('editIndex').value = '-1';
+    document.getElementById('editTeacher').value = 'masa';
+    document.getElementById('editCategory').value = '日常会話';
+    document.getElementById('editEn').value = '';
+    document.getElementById('editEnPlain').value = '';
+    document.getElementById('editJa').value = '';
+    document.getElementById('editC0').value = '';
+    document.getElementById('editC1').value = '';
+    document.getElementById('editC2').value = '';
+    document.getElementById('editC3').value = '';
+    document.getElementById('editExplain').value = '';
+    document.getElementById('editVideo').value = '';
+    updatePreview();
+    document.getElementById('editModal').classList.add('active');
+}
+
+function openEditModal(idx){
+    var p = adminPhrases[idx];
+    if(!p) return;
+    document.getElementById('modalTitle').textContent = 'フレーズを編集';
+    document.getElementById('editIndex').value = idx;
+    document.getElementById('editTeacher').value = p.teacher || 'masa';
+    document.getElementById('editCategory').value = p.category || '日常会話';
+    document.getElementById('editEn').value = p.en || '';
+    document.getElementById('editEnPlain').value = p.enPlain || '';
+    document.getElementById('editJa').value = p.ja || '';
+    var c = p.choices || ['','','',''];
+    document.getElementById('editC0').value = c[0]||'';
+    document.getElementById('editC1').value = c[1]||'';
+    document.getElementById('editC2').value = c[2]||'';
+    document.getElementById('editC3').value = c[3]||'';
+    document.getElementById('editExplain').value = p.explain || '';
+    document.getElementById('editVideo').value = p.video || '';
+    updatePreview();
+    document.getElementById('editModal').classList.add('active');
+}
+
+function closeModal(){
+    document.getElementById('editModal').classList.remove('active');
+}
+
+function savePhrase(){
+    var idx = parseInt(document.getElementById('editIndex').value, 10);
+    var phrase = {
+        teacher: document.getElementById('editTeacher').value,
+        en: document.getElementById('editEn').value,
+        enPlain: document.getElementById('editEnPlain').value,
+        ja: document.getElementById('editJa').value,
+        category: document.getElementById('editCategory').value,
+        choices: [
+            document.getElementById('editC0').value,
+            document.getElementById('editC1').value,
+            document.getElementById('editC2').value,
+            document.getElementById('editC3').value
+        ],
+        correctIndex: 0,
+        explain: document.getElementById('editExplain').value,
+        video: document.getElementById('editVideo').value,
+        published: true,
+        examples: []
+    };
+
+    if(idx >= 0 && idx < adminPhrases.length){
+        // Preserve existing fields
+        phrase.published = adminPhrases[idx].published;
+        phrase.examples = adminPhrases[idx].examples || [];
+        adminPhrases[idx] = phrase;
+    } else {
+        adminPhrases.push(phrase);
+    }
+
+    saveToLocal();
+    renderTable();
+    closeModal();
+}
+
+function deletePhrase(idx){
+    if(!confirm('このフレーズを削除しますか？')) return;
+    adminPhrases.splice(idx, 1);
+    saveToLocal();
+    renderTable();
+}
+
+function togglePublish(idx){
+    adminPhrases[idx].published = !adminPhrases[idx].published;
+    saveToLocal();
+    renderTable();
+}
+
+// ============================================================
+// Preview
+// ============================================================
+function updatePreview(){
+    var t = document.getElementById('editTeacher').value;
+    document.getElementById('previewTeacher').textContent = teacherNames[t] || t;
+    document.getElementById('previewEn').innerHTML = document.getElementById('editEn').value || '(英語フレーズ)';
+    document.getElementById('previewJa').textContent = document.getElementById('editJa').value || '(日本語訳)';
+}
+
+// Live preview updates
+['editEn','editJa','editTeacher'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.addEventListener('input', updatePreview);
+    if(el) el.addEventListener('change', updatePreview);
+});
+
+// Close modal on overlay click
+document.getElementById('editModal').addEventListener('click', function(e){
+    if(e.target === this) closeModal();
+});
+
+// ============================================================
+// Init
+// ============================================================
+loadFromLocal();
+renderTable();
+</script>
+</body>
+</html>

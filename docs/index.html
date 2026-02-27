@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Swallow アプリ化 — 手順書（1〜23）</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --primary: #833ab4;
+      --gradient: linear-gradient(135deg, #833ab4 0%, #c13584 50%, #e1306c 100%);
+      --text: #1e293b;
+      --text-light: #64748b;
+      --bg: #fafafa;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --code-bg: #f1f5f9;
+      --easy: #059669;
+      --medium: #d97706;
+      --hard: #dc2626;
+    }
+    body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); line-height: 1.8; font-size: 15px; }
+    header {
+      background: linear-gradient(135deg, #1a0a1f 0%, #2d1b4e 35%, #1a0a2a 70%, #0d0515 100%);
+      color: white;
+      padding: 3rem 1.5rem;
+      text-align: center;
+    }
+    header .badge { display: inline-block; background: var(--gradient); color: white; padding: 0.375rem 1rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; margin-bottom: 1rem; }
+    header h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; }
+    header p { color: rgba(255,255,255,0.8); font-size: 0.9rem; }
+    nav {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      overflow-x: auto;
+    }
+    nav ul { display: flex; list-style: none; max-width: 900px; margin: 0 auto; padding: 0 1rem; flex-wrap: wrap; gap: 0.25rem; }
+    nav li a {
+      display: block;
+      padding: 0.75rem 0.5rem;
+      color: var(--text-light);
+      text-decoration: none;
+      font-size: 0.75rem;
+      font-weight: 500;
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    nav li a:hover { color: var(--primary); border-bottom-color: var(--primary); }
+    main { max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+    section { margin-bottom: 2.5rem; scroll-margin-top: 80px; }
+    h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    h2 .step-num {
+      background: var(--primary);
+      color: white;
+      min-width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+    }
+    .difficulty { font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; }
+    .difficulty-easy { background: #d1fae5; color: var(--easy); }
+    .difficulty-medium { background: #fef3c7; color: var(--medium); }
+    .difficulty-hard { background: #fee2e2; color: var(--hard); }
+    h3 { font-size: 0.95rem; font-weight: 700; color: #2c5282; margin: 1rem 0 0.5rem; }
+    p { margin-bottom: 0.75rem; }
+    .card {
+      background: var(--card);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    table { width: 100%; border-collapse: collapse; margin: 0.75rem 0; font-size: 0.9rem; }
+    th, td { padding: 0.5rem 0.75rem; text-align: left; border: 1px solid var(--border); }
+    th { background: #f1f5f9; font-weight: 600; }
+    code { background: var(--code-bg); padding: 0.125rem 0.375rem; border-radius: 4px; font-size: 0.85em; }
+    .code-block {
+      background: var(--code-bg);
+      border-radius: 0.5rem;
+      padding: 1rem 1.25rem;
+      font-family: 'SF Mono', Consolas, monospace;
+      font-size: 0.8rem;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      line-height: 1.6;
+      margin: 0.75rem 0;
+    }
+    .link-box {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 0.5rem;
+      padding: 0.75rem 1rem;
+      margin: 0.5rem 0;
+      word-break: break-all;
+    }
+    .link-box a { color: #2563eb; text-decoration: none; }
+    .link-box a:hover { text-decoration: underline; }
+    .alert {
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      margin: 0.75rem 0;
+      font-size: 0.9rem;
+    }
+    .alert-info { background: #f8f6fc; border-left: 4px solid var(--primary); color: #4c1d95; }
+    .alert-warning { background: #fef2f2; border-left: 4px solid #dc2626; color: #991b1b; }
+    .alert-title { font-weight: 700; margin-bottom: 0.25rem; }
+    ul { margin: 0 0 0.75rem; padding-left: 1.5em; }
+    li { margin-bottom: 0.35rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="badge">Swallow アプリ化</div>
+  <h1>手順書（1〜23）</h1>
+  <p>準備 → Capacitor セットアップ → iOS リリース → Android リリース</p>
+</header>
+
+<nav>
+  <ul>
+    <li><a href="#phase0">凡例</a></li>
+    <li><a href="#phase1">準備（1〜3）</a></li>
+    <li><a href="#phase2">Capacitor（4〜9）</a></li>
+    <li><a href="#phase3">iOS（10〜16）</a></li>
+    <li><a href="#phase4">Android（17〜23）</a></li>
+    <li><a href="#files">ファイルリンク</a></li>
+  </ul>
+</nav>
+
+<main>
+
+  <section id="phase0">
+    <h2>凡例</h2>
+    <div class="card">
+      <p><strong>難易度の目安：</strong></p>
+      <ul>
+        <li><span class="difficulty difficulty-easy">かんたん</span> 専門知識ほぼ不要。手順通りでOK</li>
+        <li><span class="difficulty difficulty-medium">注意</span> 手順通りなら可能。エラー時は Cursor 等に相談</li>
+        <li><span class="difficulty difficulty-hard">要確認</span> 専門知識があると安心。つまずいたらエンジニアに相談</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="phase1">
+    <h2><span class="step-num">1</span>準備フェーズ</h2>
+
+    <h3>Step 1：Apple Developer Program に登録 <span class="difficulty difficulty-easy">かんたん</span></h3>
+    <div class="card">
+      <p><a href="https://developer.apple.com/programs/" target="_blank">https://developer.apple.com/programs/</a></p>
+      <ul>
+        <li>年額 $99</li>
+        <li>審査に数日かかる場合あり。先にやっておくと後が楽</li>
+      </ul>
+    </div>
+
+    <h3>Step 2：Google Play 開発者アカウントに登録（Android を出す場合） <span class="difficulty difficulty-easy">かんたん</span></h3>
+    <div class="card">
+      <p><a href="https://play.google.com/console/signup" target="_blank">https://play.google.com/console/signup</a></p>
+      <ul>
+        <li>初回 $25（一度きり）</li>
+        <li>本人確認が必要</li>
+      </ul>
+    </div>
+
+    <h3>Step 3：必要なツールをインストール <span class="difficulty difficulty-easy">かんたん</span></h3>
+    <div class="card">
+      <ul>
+        <li><strong>Node.js</strong>：<a href="https://nodejs.org" target="_blank">https://nodejs.org</a></li>
+        <li><strong>Xcode</strong>：Mac App Store から（無料）</li>
+        <li><strong>Android Studio</strong>（Android を出す場合）：<a href="https://developer.android.com/studio" target="_blank">https://developer.android.com/studio</a></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="phase2">
+    <h2><span class="step-num">2</span>Capacitor セットアップ</h2>
+
+    <h3>Step 4：Capacitor プロジェクトを初期化 <span class="difficulty difficulty-medium">注意</span></h3>
+    <div class="card">
+      <div class="code-block">cd 教材/swallow
+npm init -y
+npm install @capacitor/core @capacitor/cli @capacitor/ios @capacitor/android
+npx cap init Swallow com.masaenglishcompany.swallow</div>
+      <p>エラーが出たら、エラーメッセージを Cursor に貼って相談。</p>
+    </div>
+
+    <h3>Step 5：Web アプリを www に配置 <span class="difficulty difficulty-medium">注意</span></h3>
+    <div class="card">
+      <div class="code-block">mkdir -p www
+cp index.html www/</div>
+      <p><strong>アセット（動画・画像）がある場合：</strong></p>
+      <ul>
+        <li><code>masa_avatar.png</code>、<code>masa1.MOV</code> などの動画ファイルも <a href="../www/"><code>www/</code></a> にコピー</li>
+        <li><a href="../index.html"><code>index.html</code></a> と同じ階層に置く（相対パスで参照しているため）</li>
+      </ul>
+      <div class="code-block"># 例：swallow フォルダ内に動画・画像がある場合
+cp *.MOV www/ 2>/dev/null || true
+cp *.png www/ 2>/dev/null || true</div>
+    </div>
+
+    <h3>Step 6：<a href="../capacitor.config.json">capacitor.config.json</a> を確認 <span class="difficulty difficulty-easy">かんたん</span></h3>
+    <div class="card">
+      <p><code>webDir</code> が <code>www</code> を指していることを確認。</p>
+      <div class="code-block">{
+  "appId": "com.masaenglishcompany.swallow",
+  "appName": "Swallow",
+  "webDir": "www",
+  "server": { "androidScheme": "https" }
+}</div>
+    </div>
+
+    <h3>Step 7：iOS プロジェクトを追加 <span class="difficulty difficulty-easy">かんたん</span></h3>
+    <div class="card">
+      <div class="code-block">npx cap add ios</div>
+    </div>
+
+    <h3>Step 8：Android プロジェクトを追加（Android を出す場合） <span class="difficulty difficulty-easy">かんたん</span></h3>
+    <div class="card">
+      <div class="code-block">npx cap add android</div>
+    </div>
+
+    <h3>Step 9：ビルド内容を同期 <span class="difficulty difficulty-easy">かんたん</span></h3>
+    <div class="card">
+      <div class="code-block">npx cap sync</div>
+      <p>Web アプリを変更したら、毎回 <code>npx cap sync</code> を実行してから Xcode / Android Studio でビルドする。</p>
+    </div>
+  </section>
+
+  <section id="phase3">
+    <h2><span class="step-num">3</span>iOS リリース</h2>
+
+    <h3>Step 10：Xcode でプロジェクトを開く <span class="difficulty difficulty-easy">かんたん</span></h3>
+    <div class="card">
+      <div class="code-block">npx cap open ios</div>
+    </div>
+
+    <h3>Step 11：Xcode で署名設定 <span class="difficulty difficulty-hard">要確認</span></h3>
+    <div class="card">
+      <ul>
+        <li>左のプロジェクト一覧で「App」を選択</li>
+        <li>「Signing &amp; Capabilities」タブを開く</li>
+        <li>「Team」で自分の Apple Developer アカウントを選択</li>
+        <li>Bundle Identifier が <code>com.masaenglishcompany.swallow</code> になっているか確認</li>
+      </ul>
+      <div class="alert alert-warning">
+        <div class="alert-title">つまずきやすいポイント</div>
+        証明書・プロビジョニングプロファイルのエラーが出たら、エラーメッセージを Cursor に貼るか、エンジニアに相談。
+      </div>
+    </div>
+
+    <h3>Step 12：実機で動作確認（任意） <span class="difficulty difficulty-easy">かんたん</span></h3>
+    <div class="card">
+      <ul>
+        <li>iPhone を USB で接続</li>
+        <li>上部のデバイスで iPhone を選択</li>
+        <li>▶ ボタンでビルド・実行</li>
+      </ul>
+    </div>
+
+    <h3>Step 13：アーカイブを作成 <span class="difficulty difficulty-easy">かんたん</span></h3>
+    <div class="card">
+      <p>メニュー「Product」→「Archive」。完了まで待つ。</p>
+    </div>
+
+    <h3>Step 14：App Store Connect にアップロード <span class="difficulty difficulty-hard">要確認</span></h3>
+    <div class="card">
+      <p>アーカイブ完了後、「Distribute App」→「App Store Connect」→「Upload」。</p>
+      <p>証明書エラーが出たら、エラーメッセージを確認して Cursor に相談。</p>
+    </div>
+
+    <h3>Step 15：App Store Connect でアプリ情報を登録 <span class="difficulty difficulty-easy">かんたん</span></h3>
+    <div class="card">
+      <p><a href="https://appstoreconnect.apple.com" target="_blank">https://appstoreconnect.apple.com</a></p>
+      <ul>
+        <li>「マイ App」→「+」→ 新規アプリ作成</li>
+        <li>アプリ名、プライマリ言語、Bundle ID（<code>com.masaenglishcompany.swallow</code>）</li>
+        <li>スクリーンショット（iPhone 6.7", 6.5", 5.5" など）</li>
+        <li>説明文、キーワード、プライバシーポリシー URL、カテゴリ、年齢制限</li>
+      </ul>
+    </div>
+
+    <h3>Step 16：審査に提出 <span class="difficulty difficulty-easy">かんたん</span></h3>
+    <div class="card">
+      <p>ビルドが処理されたら、そのビルドを選択して「審査に提出」。Apple の審査を待つ（通常 1〜数日）。</p>
+    </div>
+  </section>
+
+  <section id="phase4">
+    <h2><span class="step-num">4</span>Android リリース</h2>
+
+    <h3>Step 17：Android Studio でプロジェクトを開く <span class="difficulty difficulty-easy">かんたん</span></h3>
+    <div class="card">
+      <div class="code-block">npx cap open android</div>
+    </div>
+
+    <h3>Step 18：署名キーを作成 <span class="difficulty difficulty-hard">要確認</span></h3>
+    <div class="card">
+      <ul>
+        <li>「Build」→「Generate Signed Bundle / APK」</li>
+        <li>「Android App Bundle」を選択</li>
+        <li>「Create new...」でキーストアを作成</li>
+        <li>パスワード・エイリアス・有効期限を設定（<strong>パスワードは必ずメモ</strong>）</li>
+      </ul>
+      <div class="alert alert-warning">
+        <div class="alert-title">重要</div>
+        キーストアのパスワードとファイルを紛失すると、アプリの更新ができなくなります。安全な場所にバックアップしてください。
+      </div>
+    </div>
+
+    <h3>Step 19：リリースビルドを作成 <span class="difficulty difficulty-hard">要確認</span></h3>
+    <div class="card">
+      <p>署名キーを選択してビルド。出力される <code>.aab</code> ファイルを保存。</p>
+      <p>ビルドエラーが出たら、エラーメッセージを Cursor に貼って相談。</p>
+    </div>
+
+    <h3>Step 20：Google Play Console でアプリを作成 <span class="difficulty difficulty-easy">かんたん</span></h3>
+    <div class="card">
+      <p><a href="https://play.google.com/console" target="_blank">https://play.google.com/console</a></p>
+      <p>「アプリを作成」→ アプリ名・デフォルト言語などを入力。</p>
+    </div>
+
+    <h3>Step 21：ストア掲載情報を入力 <span class="difficulty difficulty-easy">かんたん</span></h3>
+    <div class="card">
+      <ul>
+        <li>スクリーンショット（スマホ・タブレット用）</li>
+        <li>説明文（短い・長い）</li>
+        <li>アプリアイコン</li>
+        <li>コンテンツレーティング（質問に答えて取得）</li>
+        <li>プライバシーポリシー URL</li>
+        <li>ターゲット層・広告の有無など</li>
+      </ul>
+    </div>
+
+    <h3>Step 22：AAB をアップロード <span class="difficulty difficulty-easy">かんたん</span></h3>
+    <div class="card">
+      <p>「リリース」→「本番」→「新しいリリースを作成」→ <code>.aab</code> をアップロード。</p>
+    </div>
+
+    <h3>Step 23：審査に提出 <span class="difficulty difficulty-easy">かんたん</span></h3>
+    <div class="card">
+      <p>必要な項目がすべて緑になったら「審査に提出」。通常、数時間〜1日程度で審査完了。</p>
+    </div>
+  </section>
+
+  <section id="files">
+    <h2>ファイルリンク</h2>
+    <div class="card">
+      <table>
+        <tr>
+          <th>ファイル</th>
+          <th>説明</th>
+        </tr>
+        <tr>
+          <td><a href="../index.html">index.html</a></td>
+          <td>Swallow アプリ本体</td>
+        </tr>
+        <tr>
+          <td><a href="../manual.html">manual.html</a></td>
+          <td>概要・ファイル構成・Step 1〜8</td>
+        </tr>
+        <tr>
+          <td><a href="../河野さんへの依頼.html">河野さんへの依頼.html</a></td>
+          <td>外部依頼用</td>
+        </tr>
+        <tr>
+          <td><a href="../capacitor.config.json">capacitor.config.json</a></td>
+          <td>Capacitor 設定（Step 4 で生成）</td>
+        </tr>
+        <tr>
+          <td><a href="../package.json">package.json</a></td>
+          <td>依存関係（Step 4 で生成）</td>
+        </tr>
+        <tr>
+          <td><a href="../www/index.html">www/index.html</a></td>
+          <td>Web アプリ配置先（Step 5 でコピー）</td>
+        </tr>
+        <tr>
+          <td><a href="../vercel.json">vercel.json</a></td>
+          <td>Vercel デプロイ設定</td>
+        </tr>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>補足</h2>
+    <div class="card">
+      <h3>必要な環境</h3>
+      <ul>
+        <li><strong>iOS</strong>：Mac（Xcode は Mac 専用）</li>
+        <li><strong>Android</strong>：Mac または Windows（Android Studio は両方対応）</li>
+      </ul>
+      <h3>関連リンク</h3>
+      <ul>
+        <li><a href="../manual.html">manual.html</a> — 概要・ファイル構成</li>
+        <li><a href="../河野さんへの依頼.html">河野さんへの依頼.html</a> — 外部依頼用</li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<footer style="text-align: center; padding: 2rem; border-top: 1px solid var(--border); color: var(--text-light); font-size: 0.8rem;">
+  MasaEnglish &copy; 2025
+</footer>
+
+</body>
+</html>

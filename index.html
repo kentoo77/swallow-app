@@ -1,0 +1,1838 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Swallow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /*
+             * Instagram-inspired palette:
+             * UI = neutral (white, black, gray)
+             * Brand gradient = warm (purple → magenta → coral → amber)
+             * Action blue for CTAs
+             * Red for hearts / likes
+             */
+            --bg: #fafafa;
+            --bg-white: #ffffff;
+            --bg-card: #ffffff;
+            --bg-hover: #f5f5f5;
+            --glass: rgba(255,255,255,0.92);
+            --glass-border: rgba(0,0,0,0.06);
+            --glass-border-hover: rgba(0,0,0,0.1);
+            --divider: #efefef;
+
+            /* Text — Instagram-style neutral hierarchy */
+            --ink: #262626;
+            --ink-secondary: #737373;
+            --ink-muted: #a8a8a8;
+            --ink-faint: #c7c7c7;
+            --ink-link: #00376b;
+
+            /* Action blue — Instagram's signature */
+            --action: #0095f6;
+            --action-hover: #1877f2;
+            --action-light: #e8f4fd;
+
+            /* Brand — 紫〜ピンク（アイデンティティ） */
+            --brand-purple: #833ab4;
+            --brand-magenta: #c13584;
+            --brand-coral: #e1306c;
+            --grad-brand: linear-gradient(135deg, #833ab4 0%, #c13584 50%, #e1306c 100%);
+            --grad-brand-ring: conic-gradient(from 180deg, #833ab4, #c13584, #e1306c, #833ab4);
+            --grad-brand-soft: linear-gradient(135deg, #833ab4 0%, #e1306c 100%);
+            --fill-brand: rgba(131,58,180,0.08);
+
+            /* Heart red — いいねのみ（セマンティック） */
+            --heart: #ed4956;
+
+            /* Soft fills */
+            --fill-purple: rgba(131,58,180,0.06);
+            --fill-blue: rgba(0,149,246,0.06);
+            --fill-warm: linear-gradient(160deg, rgba(131,58,180,0.06) 0%, rgba(225,48,108,0.05) 100%);
+
+            /* Shadows — subtle, Instagram-like */
+            --shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-sm: 0 1px 4px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-lg: 0 12px 36px rgba(0,0,0,0.1);
+            --shadow-xl: 0 24px 60px rgba(0,0,0,0.12);
+
+            --radius: 16px;
+            --radius-sm: 12px;
+            --radius-xs: 8px;
+            --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --smooth: cubic-bezier(0.4, 0, 0.2, 1);
+            --bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            --out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html, body { height: 100%; overflow: hidden; background: #e8e8e8; }
+        body {
+            font-family: 'DM Sans', 'Noto Sans JP', -apple-system, sans-serif;
+            color: var(--ink); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* === Phone Frame === */
+        .phone-frame { position: relative; width: 100%; height: 100%; }
+        @media (min-width: 600px) {
+            body {
+                display: flex; align-items: center; justify-content: center;
+                background: linear-gradient(160deg, #e5e5e5 0%, #e8e8e8 40%, #e5e5e5 100%);
+            }
+            .phone-frame {
+                width: 390px; height: 844px; max-height: 95vh;
+                border-radius: 52px; overflow: hidden;
+                border: 1px solid rgba(255,255,255,0.5);
+                box-shadow: var(--shadow-xl), 0 0 0 1px rgba(0,0,0,0.04);
+            }
+            .phone-frame::before {
+                content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+                width: 126px; height: 34px; background: #000; border-radius: 0 0 22px 22px; z-index: 9999;
+            }
+        }
+
+        /* === Splash === */
+        .splash {
+            position: absolute; inset: 0; z-index: 10000;
+            background: linear-gradient(165deg, #1a0a1f 0%, #2d1b4e 35%, #1a0a2a 70%, #0d0515 100%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.6s var(--smooth), visibility 0.6s var(--smooth);
+            overflow: hidden;
+        }
+        .splash::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 50% 30%, rgba(131,58,180,0.25) 0%, transparent 55%),
+                        radial-gradient(ellipse at 70% 70%, rgba(225,48,108,0.15) 0%, transparent 50%),
+                        radial-gradient(ellipse at 30% 80%, rgba(131,58,180,0.1) 0%, transparent 45%);
+            animation: splashBreath 3s ease-in-out infinite alternate;
+        }
+        @keyframes splashBreath { 0%{opacity:0.7;transform:scale(1)} 100%{opacity:1;transform:scale(1.02)} }
+        .splash.hide { opacity: 0; visibility: hidden; pointer-events: none; display: none; }
+
+        .splash-bird {
+            width: 100px; height: 84px;
+            animation: splashFloat 2.5s ease-in-out infinite alternate;
+            filter: drop-shadow(0 8px 32px rgba(131,58,180,0.4)) drop-shadow(0 0 60px rgba(225,48,108,0.2));
+            position: relative; z-index: 1;
+        }
+        .splash-bird svg { width: 100%; height: 100%; }
+        .splash-title {
+            font-family: 'Sora', sans-serif; font-size: 2.4rem; font-weight: 800;
+            margin-top: 20px; letter-spacing: -0.04em; position: relative; z-index: 1;
+            color: #fff; text-shadow: 0 2px 24px rgba(131,58,180,0.5), 0 0 48px rgba(225,48,108,0.2);
+        }
+        .splash-sub {
+            color: rgba(255,255,255,0.7); font-size: 0.8rem; margin-top: 8px;
+            font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+            position: relative; z-index: 1; text-shadow: 0 1px 8px rgba(0,0,0,0.3);
+        }
+        .splash-loader {
+            margin-top: 32px; width: 88px; height: 3px; background: rgba(255,255,255,0.15);
+            border-radius: 10px; overflow: hidden; position: relative; z-index: 1;
+        }
+        .splash-loader::after {
+            content: ''; position: absolute; inset: 0; border-radius: 10px;
+            background: linear-gradient(90deg, #833ab4, #c13584, #e1306c); animation: splashLoad 1.5s ease-in-out forwards;
+        }
+        @keyframes splashLoad { 0%{width:0} 100%{width:100%} }
+        .splash-flyaway .splash-bird { animation: splashFly 0.7s var(--out-expo) forwards; }
+        .splash-flyaway .splash-title,
+        .splash-flyaway .splash-sub,
+        .splash-flyaway .splash-loader { animation: splashFadeDown 0.4s var(--smooth) forwards; }
+        @keyframes splashFloat { 0%{transform:translateY(0) rotate(-1deg)} 100%{transform:translateY(-8px) rotate(1deg)} }
+        @keyframes splashFly { 0%{transform:translateY(0) scale(1);opacity:1} 50%{transform:translateY(-60px) scale(0.8) rotate(-8deg);opacity:0.6} 100%{transform:translateY(-200px) scale(0.15) rotate(-10deg);opacity:0} }
+        @keyframes splashFadeDown { to{opacity:0;transform:translateY(18px)} }
+
+        .app { width: 100%; height: 100%; position: relative; overflow: hidden; background: var(--bg); }
+
+        .screen {
+            position: absolute; inset: 0; background: var(--bg);
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.3s var(--smooth), transform 0.35s var(--out-expo);
+            overflow-y: auto; -webkit-overflow-scrolling: touch;
+            transform: translate3d(0,5px,0);
+            scrollbar-width: none;
+            backface-visibility: hidden; -webkit-backface-visibility: hidden;
+        }
+        .screen::-webkit-scrollbar { display: none; }
+        .screen.active { opacity: 1; visibility: visible; transform: translate3d(0,0,0); }
+
+        /* === Bottom Nav — IG style === */
+        .bottom-nav {
+            position: absolute; bottom: 0; left: 0; right: 0; height: 56px;
+            background: var(--bg-white);
+            border-top: 1px solid var(--divider);
+            display: flex; align-items: center; justify-content: space-around; z-index: 100;
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
+            background: none; border: none; cursor: pointer; padding: 8px 20px;
+            transition: all 0.25s var(--smooth); position: relative;
+        }
+        .nav-item svg { width: 24px; height: 24px; fill: var(--ink-muted); transition: all 0.25s var(--smooth); }
+        .nav-item span {
+            font-size: 0.55rem; font-weight: 500; letter-spacing: 0.01em;
+            color: var(--ink-muted); transition: all 0.25s var(--smooth);
+        }
+        .nav-item.active svg { fill: var(--ink); transform: scale(1.05); }
+        .nav-item.active span { color: var(--ink); font-weight: 700; }
+
+        /* === Home Header — clean like IG === */
+        .home-header {
+            position: sticky; top: 0; z-index: 10;
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--divider);
+            padding: 52px 20px 12px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .home-logo { display: flex; align-items: center; gap: 8px; }
+        .logo-mark { width: 28px; height: 24px; display: flex; align-items: center; justify-content: center; }
+        .home-logo .logo-text {
+            font-family: 'Sora', sans-serif; font-size: 1.35rem; font-weight: 800; letter-spacing: -0.03em;
+            color: var(--ink);
+        }
+        .header-btn {
+            background: none; border: none;
+            width: 36px; height: 36px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s var(--smooth);
+        }
+        .header-btn:active { transform: scale(0.9); background: var(--bg-hover); }
+        .header-btn svg { width: 24px; height: 24px; fill: var(--ink); }
+
+        .home-content { padding: 0 0 72px; }
+
+        /* === Streak Card — warm premium with depth === */
+        .streak-card {
+            margin: 16px 16px; padding: 0;
+            background: var(--bg-white);
+            border: 1px solid rgba(131,58,180,0.15);
+            border-radius: var(--radius); position: relative; overflow: hidden;
+            animation: cardUp 0.45s var(--out-expo) 0.05s both;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06), 0 2px 6px rgba(131,58,180,0.08), 0 0 0 1px rgba(0,0,0,0.02);
+        }
+        .streak-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+            background: var(--grad-brand);
+        }
+        @keyframes cardUp {
+            0% { opacity: 0; transform: translateY(16px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .streak-hero {
+            display: flex; align-items: center; justify-content: center;
+            padding: 24px 20px 4px; gap: 10px;
+        }
+        .streak-fire { font-size: 1.8rem; line-height: 1; }
+        .streak-number {
+            font-family: 'Sora', sans-serif; font-size: 2.8rem; font-weight: 800;
+            color: var(--ink); line-height: 1;
+        }
+        .streak-unit {
+            font-family: 'Sora', sans-serif; font-size: 0.82rem; font-weight: 700;
+            color: var(--ink-secondary); margin-top: 4px;
+        }
+        .streak-meta {
+            display: flex; justify-content: center; gap: 32px; padding: 8px 20px 20px;
+        }
+        .streak-meta-item { text-align: center; }
+        .streak-meta-value {
+            font-family: 'Sora', sans-serif; font-size: 1.05rem; font-weight: 700; color: var(--ink);
+        }
+        .streak-meta-label { font-size: 0.65rem; color: var(--ink-muted); font-weight: 500; margin-top: 2px; }
+        .streak-meta-divider { width: 1px; background: var(--divider); align-self: stretch; margin: 4px 0; }
+
+        /* === CTA Button — brand gradient (purple→coral) === */
+        .cta-btn {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            width: calc(100% - 32px); margin: 0 16px 20px; padding: 15px 24px;
+            background: linear-gradient(135deg, #833ab4 0%, #c13584 50%, #e1306c 100%);
+            background-size: 200% 200%;
+            background-position: 0% 50%;
+            border: none; border-radius: 14px;
+            color: #fff; font-family: 'Sora', sans-serif; font-size: 0.88rem; font-weight: 700;
+            cursor: pointer; position: relative; overflow: hidden;
+            transition: all 0.3s var(--smooth);
+            animation: cardUp 0.45s var(--out-expo) 0.12s both;
+            box-shadow: 0 6px 20px rgba(131,58,180,0.35), 0 2px 8px rgba(225,48,108,0.2);
+        }
+        .cta-btn::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+            pointer-events: none;
+        }
+        .cta-btn:hover {
+            background-position: 100% 50%;
+            box-shadow: 0 8px 24px rgba(131,58,180,0.4), 0 4px 12px rgba(225,48,108,0.25);
+            transform: translateY(-1px);
+        }
+        .cta-btn:active {
+            transform: scale(0.98) translateY(0);
+            box-shadow: 0 2px 10px rgba(131,58,180,0.25);
+        }
+        .cta-btn svg { width: 18px; height: 18px; fill: #fff; }
+        .cta-btn.cta-done {
+            cursor: default; background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #059669; box-shadow: 0 4px 12px rgba(5,150,105,0.2);
+        }
+        .cta-btn.cta-done:hover { transform: none; }
+        .cta-done-emoji { font-size: 1.1rem; }
+
+        .section { padding: 0 16px 24px; animation: cardUp 0.5s var(--out-expo) 0.22s both; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .section-title { font-family: 'Sora', sans-serif; font-size: 0.92rem; font-weight: 700; }
+        .section-link {
+            font-size: 0.78rem; color: var(--action); background: none;
+            border: none; cursor: pointer; font-weight: 600; padding: 0;
+            transition: opacity 0.2s;
+        }
+        .section-link:active { opacity: 0.6; }
+
+        /* === おすすめの先生 === */
+        .recommended-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+        .recommended-scroll::-webkit-scrollbar { display: none; }
+        .recommended-card {
+            flex-shrink: 0; width: 160px; padding: 14px;
+            background: var(--bg-white); border: 1px solid var(--divider);
+            border-radius: var(--radius-sm); cursor: pointer;
+            transition: all 0.2s var(--smooth);
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+        }
+        .recommended-card:active { transform: scale(0.98); background: var(--bg-hover); }
+        .recommended-card.has-match { border-color: var(--brand-coral); background: var(--fill-brand); }
+        .recommended-card .avatar-wrap {
+            width: 56px; height: 56px; border-radius: 50%;
+            background: var(--bg-hover); display: flex; align-items: center; justify-content: center;
+            overflow: hidden; flex-shrink: 0;
+        }
+        .recommended-card .avatar-wrap img { width: 100%; height: 100%; object-fit: cover; }
+        .recommended-card .rec-name { font-size: 0.9rem; font-weight: 700; color: var(--ink); }
+        .recommended-card .rec-tag {
+            font-size: 0.68rem; font-weight: 600;
+            padding: 3px 10px; border-radius: 50px; white-space: nowrap;
+            background: var(--fill-purple); color: var(--brand-purple);
+            border: 1px solid rgba(131,58,180,0.2);
+        }
+        .recommended-card.has-match .rec-tag {
+            background: var(--grad-brand-soft); color: #fff; border: none;
+        }
+        .recommended-card .rec-actions { display: flex; gap: 6px; width: 100%; margin-top: 6px; }
+        .recommended-card .rec-follow-btn,
+        .recommended-card .rec-hide-btn {
+            flex: 1; padding: 6px 10px; font-size: 0.68rem; font-weight: 700; border-radius: 8px;
+            border: none; cursor: pointer; font-family: inherit;
+            transition: all 0.2s var(--smooth);
+        }
+        .recommended-card .rec-follow-btn.do-follow {
+            background: var(--action); color: #fff;
+        }
+        .recommended-card .rec-follow-btn.is-following {
+            background: var(--bg); color: var(--ink-secondary); border: 1px solid var(--divider);
+        }
+        .recommended-card .rec-hide-btn {
+            background: var(--bg); color: var(--ink-muted); border: 1px solid var(--divider);
+        }
+        .recommended-card .rec-follow-btn:active,
+        .recommended-card .rec-hide-btn:active { transform: scale(0.97); }
+
+        /* === Following Avatars — IG story ring === */
+        .following-scroll { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+        .following-scroll::-webkit-scrollbar { display: none; }
+        .following-item {
+            display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0;
+            cursor: pointer; transition: transform 0.2s var(--smooth);
+        }
+        .following-item:active { transform: scale(0.95); }
+        .avatar-ring {
+            width: 68px; height: 68px; border-radius: 50%; padding: 3px;
+            background: var(--divider); transition: all 0.3s var(--smooth); position: relative;
+        }
+        /* IG-style gradient ring for unseen content */
+        .avatar-ring.has-unchecked {
+            background: var(--grad-brand-ring);
+            padding: 3px;
+        }
+        .avatar-inner {
+            width: 100%; height: 100%; border-radius: 50%;
+            background: var(--bg-white); display: flex; align-items: center; justify-content: center;
+            font-family: 'Sora', sans-serif; font-size: 0.88rem; font-weight: 700; color: var(--ink);
+            border: 3px solid var(--bg-white); overflow: hidden;
+        }
+        .avatar-inner img { width: 100%; height: 100%; object-fit: cover; }
+        .following-name {
+            font-size: 0.65rem; font-weight: 400; color: var(--ink);
+            max-width: 66px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+
+        /* === Settings === */
+        .page-header {
+            position: sticky; top: 0; z-index: 10;
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--divider);
+            padding: 52px 20px 12px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .page-title { font-family: 'Sora', sans-serif; font-size: 1rem; font-weight: 700; }
+        .back-btn { background: none; border: none; padding: 4px; cursor: pointer; transition: transform 0.2s var(--smooth); }
+        .back-btn:active { transform: translateX(-3px) scale(0.9); }
+        .back-btn svg { width: 24px; height: 24px; fill: var(--ink); }
+        .settings-content { padding: 12px 0 100px; }
+        .setting-group {
+            background: var(--bg-white);
+            margin-bottom: 12px; overflow: hidden;
+            border-top: 1px solid var(--divider);
+            border-bottom: 1px solid var(--divider);
+            animation: cardUp 0.4s var(--out-expo) both;
+        }
+        .setting-group:nth-child(2) { animation-delay: 0.08s; }
+        .setting-group-title {
+            font-size: 0.68rem; color: var(--ink-secondary); padding: 16px 16px 6px;
+            text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+        }
+        .setting-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 16px; border-bottom: 1px solid var(--divider);
+            cursor: pointer; transition: background 0.15s;
+        }
+        .setting-item:last-child { border-bottom: none; }
+        .setting-item:active { background: var(--bg-hover); }
+        .setting-label { font-size: 0.88rem; font-weight: 400; }
+        .setting-value { display: flex; align-items: center; gap: 4px; color: var(--ink-secondary); font-size: 0.85rem; font-weight: 500; }
+        .setting-value svg { width: 16px; height: 16px; fill: var(--ink-muted); }
+        .phrase-selector { display: flex; gap: 6px; }
+        .phrase-option {
+            width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;
+            border: 1.5px solid var(--divider); border-radius: 10px;
+            background: transparent; font-family: 'Sora', sans-serif;
+            font-size: 0.88rem; font-weight: 600; color: var(--ink-muted);
+            cursor: pointer; transition: all 0.2s var(--smooth);
+        }
+        .phrase-option.selected {
+            border-color: var(--action); background: rgba(0,149,246,0.06);
+            color: var(--action);
+        }
+
+        /* === Teachers === */
+        .teachers-content { padding: 8px 0 100px; }
+        .teacher-card {
+            display: flex; align-items: center; gap: 14px; padding: 14px 16px;
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--divider);
+            cursor: pointer; transition: background 0.15s;
+            animation: cardUp 0.4s var(--out-expo) both;
+        }
+        .teacher-card:first-child { border-top: 1px solid var(--divider); }
+        .teacher-card:active { background: var(--bg-hover); }
+        .teacher-card-avatar {
+            width: 50px; height: 50px; border-radius: 50%;
+            background: var(--bg-hover); display: flex; align-items: center; justify-content: center;
+            font-family: 'Sora', sans-serif; font-size: 1rem; font-weight: 700;
+            color: var(--ink); flex-shrink: 0; overflow: hidden;
+            box-shadow: 0 0 0 2px var(--bg-white), 0 0 0 3.5px rgba(193,53,132,0.45);
+        }
+        .teacher-card-info { flex: 1; min-width: 0; }
+        .teacher-card-name { font-size: 0.9rem; font-weight: 600; margin-bottom: 1px; }
+        .teacher-card-level { font-size: 0.75rem; color: var(--ink-muted); font-weight: 500; }
+        .follow-btn {
+            padding: 8px 20px; border-radius: 10px; font-size: 0.8rem; font-weight: 700;
+            cursor: pointer; transition: all 0.2s var(--smooth); font-family: 'DM Sans', sans-serif;
+        }
+        .follow-btn.do-follow {
+            background: var(--action); border: none; color: #fff;
+        }
+        .follow-btn.do-follow:active { opacity: 0.8; }
+        .follow-btn.is-following {
+            background: transparent; border: 1.5px solid var(--divider);
+            color: var(--ink);
+        }
+
+        /* === Profile === */
+        .profile-top { text-align: center; padding: 20px 20px; }
+        .profile-avatar {
+            width: 86px; height: 86px; border-radius: 50%;
+            background: var(--bg-hover); display: flex; align-items: center; justify-content: center;
+            font-family: 'Sora', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--ink);
+            margin: 0 auto 12px; overflow: hidden; position: relative;
+            animation: avatarPop 0.5s var(--spring) both;
+            box-shadow: 0 0 0 3px var(--bg-white), 0 0 0 5px rgba(193,53,132,0.4);
+        }
+        @keyframes avatarPop { 0%{opacity:0;transform:scale(0.6)} 100%{opacity:1;transform:scale(1)} }
+        .profile-name { font-size: 1.15rem; font-weight: 700; margin-bottom: 2px; }
+        .profile-handle { font-size: 0.82rem; color: var(--ink-muted); margin-bottom: 10px; }
+        .profile-level {
+            display: inline-block; padding: 5px 16px;
+            background: var(--bg); border-radius: 50px;
+            font-size: 0.72rem; font-weight: 600; color: var(--ink-secondary);
+            margin-bottom: 12px;
+            border: 1px solid var(--divider);
+        }
+        .profile-bio { font-size: 0.85rem; color: var(--ink); line-height: 1.5; padding: 0 16px; margin-bottom: 16px; }
+        .profile-stats { display: flex; justify-content: center; gap: 36px; margin-bottom: 18px; }
+        .profile-stat { text-align: center; }
+        .profile-stat-value {
+            font-family: 'Sora', sans-serif; font-size: 1.1rem; font-weight: 800;
+            color: var(--ink);
+        }
+        .profile-stat-label { font-size: 0.65rem; color: var(--ink-muted); margin-top: 1px; }
+        .profile-actions { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; padding: 0 16px; }
+        .profile-follow-btn {
+            flex: 1; padding: 11px; border-radius: 10px; font-family: 'DM Sans', sans-serif;
+            font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 0.2s var(--smooth);
+        }
+        .profile-follow-btn.do-follow { background: var(--action); border: none; color: #fff; }
+        .profile-follow-btn.do-follow:active { opacity: 0.8; }
+        .profile-follow-btn.is-following {
+            background: var(--bg); border: 1.5px solid var(--divider);
+            color: var(--ink);
+        }
+        .profile-ig-btn {
+            padding: 11px 16px; border-radius: 10px;
+            background: var(--bg); border: 1.5px solid var(--divider);
+            cursor: pointer; display: flex; align-items: center; gap: 5px;
+            font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600; color: var(--ink);
+            transition: all 0.2s var(--smooth);
+        }
+        .profile-ig-btn:active { background: var(--bg-hover); }
+        .profile-ig-btn svg { width: 16px; height: 16px; }
+
+        .profile-divider { height: 1px; background: var(--divider); margin: 0; }
+        .profile-section-title {
+            padding: 16px 16px 12px; font-size: 0.82rem; font-weight: 700;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .profile-section-title::before {
+            content: ''; width: 3px; height: 14px; background: var(--grad-brand-soft);
+            border-radius: 2px; flex-shrink: 0;
+        }
+        .profile-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 0 0 100px; }
+        .profile-grid-item {
+            aspect-ratio: 1; background: var(--bg-hover); border-radius: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 10px; cursor: pointer; transition: opacity 0.15s;
+            position: relative; overflow: hidden;
+        }
+        .profile-grid-item:active { opacity: 0.7; }
+        .profile-grid-item .grid-text { font-size: 0.65rem; color: var(--ink); text-align: center; font-weight: 600; line-height: 1.3; position: relative; z-index: 2; }
+        .profile-grid-item .grid-category {
+            position: absolute; top: 6px; left: 6px;
+            font-size: 0.5rem; color: #fff; font-weight: 600;
+            background: rgba(0,0,0,0.5); padding: 2px 7px; border-radius: 4px; z-index: 3;
+            backdrop-filter: blur(4px);
+        }
+        .profile-grid-item.has-video { background: none; }
+        .profile-grid-item.has-video .grid-text { color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+        .profile-grid-item.has-video::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(0,0,0,0.5) 0%, transparent 60%); z-index: 1; }
+        .profile-grid-item.has-video .grid-play {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            width: 28px; height: 28px; background: rgba(255,255,255,0.9);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 2;
+        }
+        .profile-grid-item.has-video .grid-play svg { width: 12px; height: 12px; fill: var(--ink); margin-left: 1px; }
+        .grid-video-thumb { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+        /* === Lesson — dark immersive === */
+        .lesson-screen { background: #000; overflow: hidden; }
+        .lesson-header {
+            position: absolute; top: 0; left: 0; right: 0; z-index: 100;
+            padding: 52px 14px 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+        }
+        .lesson-header-left { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+        .lesson-logo { display: flex; align-items: center; }
+        .lesson-logo-text { font-family: 'Sora', sans-serif; font-size: 1rem; font-weight: 800; color: #fff; letter-spacing: -0.02em; text-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+        .lesson-close {
+            background: rgba(255,255,255,0.1); backdrop-filter: blur(20px) saturate(150%);
+            -webkit-backdrop-filter: blur(20px) saturate(150%);
+            border: 1px solid rgba(255,255,255,0.15); border-radius: 50%; width: 38px; height: 38px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.25s var(--spring); flex-shrink: 0;
+        }
+        .lesson-close:active { transform: scale(0.85); background: rgba(255,255,255,0.18); }
+        .lesson-close svg { width: 18px; height: 18px; fill: #fff; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2)); }
+        .lesson-header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .lesson-progress {
+            color: #fff; font-family: 'Sora', sans-serif; font-size: 0.8rem; font-weight: 600;
+            background: rgba(255,255,255,0.1); backdrop-filter: blur(20px) saturate(150%);
+            -webkit-backdrop-filter: blur(20px) saturate(150%);
+            border: 1px solid rgba(255,255,255,0.15); border-radius: 20px;
+            padding: 6px 16px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .mute-btn {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: rgba(255,255,255,0.1); backdrop-filter: blur(20px) saturate(150%);
+            -webkit-backdrop-filter: blur(20px) saturate(150%);
+            border: 1px solid rgba(255,255,255,0.15);
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            transition: all 0.25s var(--spring); flex-shrink: 0;
+        }
+        .mute-btn:active { transform: scale(0.9); }
+        .mute-btn svg { width: 16px; height: 16px; fill: #fff; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2)); }
+
+        .swipe-container { position: absolute; inset: 0; overflow: hidden; }
+        .cards-wrapper { height: 100%; transition: transform 0.5s var(--out-expo); will-change: transform; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+        .card { height: 100%; width: 100%; position: relative; overflow: hidden; background: #000; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+        .card-video-wrap { position: absolute; inset: 0; }
+        .card-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: translateZ(0); z-index: 0; filter: brightness(0.98); }
+        .card-video.active { z-index: 1; }
+        .card-fallback-bg {
+            position: absolute; inset: 0;
+            background: linear-gradient(160deg, #1a1a1a 0%, #2a2a2a 40%, #1a1a1a 100%);
+        }
+        .card-fallback-bg::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(circle at 30% 40%, rgba(131,58,180,0.12) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 60%, rgba(225,48,108,0.08) 0%, transparent 50%);
+        }
+        .card-fallback-bg .fallback-avatar { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-65%); font-size: 5rem; opacity: 0.04; font-weight: 800; color: #fff; }
+        .card-overlay-top { position: absolute; top: 0; left: 0; right: 0; height: 120px; background: linear-gradient(180deg, rgba(0,0,0,0.35) 0%, transparent 100%); z-index: 2; pointer-events: none; }
+        .card-overlay-bottom { position: absolute; bottom: 0; left: 0; right: 0; height: 360px; background: linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.15) 70%, transparent 100%); z-index: 2; pointer-events: none; }
+
+        .card-bottom { position: absolute; bottom: 0; left: 0; right: 56px; padding: 0 14px 26px; z-index: 10; color: #fff; }
+        .card-teacher-row { display: flex; align-items: center; gap: 9px; margin-bottom: 12px; }
+        .card-teacher-av {
+            width: 34px; height: 34px; border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center;
+            font-family: 'Sora', sans-serif; font-size: 0.78rem; font-weight: 700;
+            background: rgba(255,255,255,0.1); flex-shrink: 0; color: #fff; overflow: hidden;
+        }
+        .card-teacher-name { font-size: 0.85rem; font-weight: 700; text-shadow: 0 1px 6px rgba(0,0,0,0.5); }
+        .card-category {
+            padding: 3px 8px; background: rgba(0,0,0,0.35);
+            border-radius: 6px; font-size: 0.62rem; margin-left: 4px; font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+        }
+        .card-english {
+            font-family: 'Sora', sans-serif; font-size: 1.45rem; font-weight: 700;
+            line-height: 1.35; margin-bottom: 8px;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.4), 0 0 40px rgba(0,0,0,0.1);
+            letter-spacing: -0.015em;
+        }
+        .card-english .hl {
+            color: #f9a8d4;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.4), 0 0 24px rgba(225,48,108,0.3);
+            position: relative;
+        }
+        .card-english .hl::after {
+            content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, rgba(225,48,108,0.6) 0%, rgba(225,48,108,0) 100%);
+            border-radius: 1px;
+        }
+        .card-japanese {
+            font-size: 0.88rem; color: rgba(255,255,255,0.95); margin-bottom: 10px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.4);
+            font-weight: 500;
+        }
+        .card-hint {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 9px 16px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
+            backdrop-filter: blur(20px) saturate(150%); -webkit-backdrop-filter: blur(20px) saturate(150%);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 12px; font-size: 0.76rem; color: rgba(255,255,255,0.82);
+            position: relative; overflow: hidden; font-weight: 500;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+        }
+        .card-hint::before {
+            content: '💡'; margin-right: 2px; font-size: 0.72rem;
+        }
+        .card-text-area { opacity: 0; transform: translateY(16px); pointer-events: none; }
+        .card-text-area.visible {
+            opacity: 1; transform: translateY(0); pointer-events: auto;
+            animation: answerReveal 0.55s var(--out-expo) forwards;
+        }
+        @keyframes answerReveal { 0%{opacity:0;transform:translateY(16px)} 100%{opacity:1;transform:translateY(0)} }
+        .card-text-area.visible .card-english { animation: textStagger 0.5s var(--out-expo) 0.05s both; }
+        .card-text-area.visible .card-japanese { animation: textStagger 0.5s var(--out-expo) 0.12s both; }
+        .card-text-area.visible .card-hint { animation: textStagger 0.5s var(--out-expo) 0.2s both; }
+        @keyframes textStagger { 0%{opacity:0;transform:translateY(10px)} 100%{opacity:1;transform:translateY(0)} }
+        .card-show-btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            margin-top: 10px; padding: 15px 32px;
+            background: linear-gradient(135deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 100%);
+            backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 16px;
+            color: #fff; font-family: 'DM Sans', 'Noto Sans JP', sans-serif; font-size: 0.88rem;
+            font-weight: 600; cursor: pointer; letter-spacing: 0.01em;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+            transition: all 0.3s var(--out-expo);
+            position: relative; overflow: hidden;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.12);
+            animation: showBtnPulse 3s ease-in-out infinite;
+        }
+        @keyframes showBtnPulse {
+            0%,100% { box-shadow: 0 2px 16px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.12); }
+            50% { box-shadow: 0 2px 24px rgba(131,58,180,0.12), inset 0 1px 0 rgba(255,255,255,0.15); }
+        }
+        .card-show-btn::before {
+            content: ''; position: absolute; top: -50%; left: -60%; width: 40%; height: 200%;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
+            transform: rotate(25deg); pointer-events: none;
+            animation: btnShimmer 4s ease-in-out infinite;
+        }
+        @keyframes btnShimmer {
+            0%,100% { left: -60%; opacity: 0; }
+            10% { opacity: 1; }
+            50% { left: 120%; opacity: 1; }
+            60%,100% { opacity: 0; left: 120%; }
+        }
+        .card-show-btn .show-icon {
+            width: 18px; height: 18px; opacity: 0.85; transition: transform 0.3s var(--spring);
+        }
+        .card-show-btn:hover .show-icon { transform: scale(1.1); }
+        .card-show-btn:active {
+            transform: scale(0.96);
+            background: linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%);
+            border-color: rgba(255,255,255,0.35);
+        }
+        .card-show-btn.hidden { display: none; }
+        .choice-question { font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 12px; text-shadow: 0 2px 8px rgba(0,0,0,0.6), 0 0 24px rgba(0,0,0,0.3); }
+        .choice-btns { display: flex; flex-direction: column; gap: 10px; }
+        .choice-btn {
+            padding: 14px 18px; text-align: left;
+            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 12px; color: #fff; font-size: 0.88rem; font-weight: 600;
+            cursor: pointer; transition: all 0.25s var(--smooth);
+            text-shadow: 0 1px 4px rgba(0,0,0,0.5); box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+        }
+        .choice-btn:hover { background: rgba(255,255,255,0.12); }
+        .choice-btn:active { transform: scale(0.98); }
+        .choice-btn.correct { background: rgba(34,197,94,0.25); border-color: rgba(34,197,94,0.5); }
+        .choice-btn.wrong { background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.4); opacity: 0.7; }
+        .choice-btn.disabled { pointer-events: none; opacity: 0.6; }
+        .choice-result { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+        .choice-result.correct { color: #22c55e; }
+        .choice-result.wrong { color: #ef4444; }
+        .card-choice-area { margin-top: 8px; }
+        .card-choice-area.hidden { display: none; }
+        .card-explain-btn {
+            display: none; margin-top: 10px; padding: 12px 24px;
+            background: linear-gradient(135deg, rgba(131,58,180,0.2) 0%, rgba(225,48,108,0.14) 100%);
+            backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid rgba(131,58,180,0.3);
+            border-radius: 14px;
+            color: rgba(255,255,255,0.95); font-family: 'DM Sans', 'Noto Sans JP', sans-serif; font-size: 0.82rem;
+            font-weight: 600; cursor: pointer; letter-spacing: 0.01em;
+            transition: all 0.3s var(--out-expo);
+            position: relative; overflow: hidden;
+            box-shadow: 0 2px 16px rgba(131,58,180,0.1), inset 0 1px 0 rgba(255,255,255,0.08);
+        }
+        .card-explain-btn::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 40%);
+            pointer-events: none;
+        }
+        .card-explain-btn .explain-icon {
+            display: inline-block; margin-right: 4px; font-size: 0.78rem;
+        }
+        .card-explain-btn:active {
+            transform: scale(0.96);
+            background: linear-gradient(135deg, rgba(131,58,180,0.3) 0%, rgba(225,48,108,0.22) 100%);
+            border-color: rgba(131,58,180,0.45);
+            box-shadow: 0 4px 24px rgba(131,58,180,0.15), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        .card-explain-btn.visible {
+            display: inline-flex; align-items: center;
+            animation: explainBtnIn 0.45s var(--out-expo);
+        }
+        @keyframes explainBtnIn {
+            0% { opacity: 0; transform: translateY(10px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .card-explain-btn.hidden { display: none; }
+        @keyframes fadeUp { 0%{opacity:0;transform:translateY(8px)} 100%{opacity:1;transform:translateY(0)} }
+
+        /* Explain Overlay — premium sheet */
+        .explain-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.45); z-index: 300; opacity: 0; visibility: hidden; transition: all 0.3s; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+        .explain-overlay.open { opacity: 1; visibility: visible; }
+        .explain-panel {
+            position: absolute; bottom: 0; left: 0; right: 0; max-height: 75%;
+            background: var(--bg-white); border-radius: 24px 24px 0 0;
+            transform: translateY(100%); transition: transform 0.5s var(--out-expo);
+            display: flex; flex-direction: column;
+            box-shadow: 0 -12px 50px rgba(0,0,0,0.15), 0 -2px 8px rgba(0,0,0,0.05);
+        }
+        .explain-overlay.open .explain-panel { transform: translateY(0); }
+        .explain-handle {
+            width: 36px; height: 4px; background: var(--ink-faint); border-radius: 4px;
+            margin: 10px auto 0;
+        }
+        .explain-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 18px 14px; border-bottom: 1px solid var(--divider); flex-shrink: 0;
+        }
+        .explain-header h3 { font-size: 0.95rem; font-weight: 700; color: var(--ink); }
+        .explain-close-btn {
+            background: var(--bg); border: none; border-radius: 50%; width: 30px; height: 30px;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            transition: background 0.15s;
+        }
+        .explain-close-btn:active { background: var(--bg-hover); }
+        .explain-close-btn svg { width: 18px; height: 18px; fill: var(--ink-muted); }
+        .explain-body { flex: 1; overflow-y: auto; padding: 20px 18px 28px; color: var(--ink); }
+        .explain-phrase-card {
+            padding: 18px 20px; margin-bottom: 20px;
+            background: linear-gradient(135deg, rgba(131,58,180,0.04) 0%, rgba(225,48,108,0.03) 100%);
+            border: 1px solid rgba(131,58,180,0.08);
+            border-radius: 16px; position: relative; overflow: hidden;
+        }
+        .explain-phrase-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: var(--grad-brand-soft);
+        }
+        .explain-phrase {
+            font-family: 'Sora', sans-serif; font-size: 1.2rem; font-weight: 700; margin-bottom: 4px;
+            color: var(--ink);
+        }
+        .explain-ja { font-size: 0.84rem; color: var(--ink-secondary); margin: 0; }
+        .explain-section-title {
+            font-size: 0.66rem; font-weight: 700; color: var(--ink-muted);
+            text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px; margin-top: 4px;
+            display: flex; align-items: center; gap: 7px;
+        }
+        .explain-section-title::before { content: ''; width: 3px; height: 14px; background: var(--grad-brand-soft); border-radius: 2px; flex-shrink: 0; }
+        .explain-content { font-size: 0.86rem; color: var(--ink-secondary); line-height: 1.85; }
+        .explain-content p { margin-bottom: 12px; }
+        .explain-content b { color: var(--ink); font-weight: 600; }
+        .explain-example {
+            padding: 16px 18px; margin: 12px 0 16px;
+            background: var(--bg-white);
+            border-radius: 14px;
+            border: 1px solid var(--divider);
+            position: relative; overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+        }
+        .explain-example::before {
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+            background: var(--grad-brand-soft); border-radius: 3px 0 0 3px;
+        }
+        .explain-example .ex-en {
+            font-family: 'Sora', sans-serif; font-size: 0.88rem; font-weight: 600;
+            color: var(--ink); margin-bottom: 5px; letter-spacing: -0.01em;
+        }
+        .explain-example .ex-ja { font-size: 0.78rem; color: var(--ink-muted); }
+
+        /* Review Detail Overlay */
+        .review-detail-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 350; opacity: 0; visibility: hidden; transition: all 0.3s; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+        .review-detail-overlay.open { opacity: 1; visibility: visible; }
+        .review-detail-panel {
+            position: absolute; bottom: 0; left: 0; right: 0; max-height: 80%;
+            background: var(--bg-white); border-radius: 24px 24px 0 0;
+            transform: translateY(100%); transition: transform 0.5s var(--out-expo);
+            display: flex; flex-direction: column;
+            box-shadow: 0 -12px 50px rgba(0,0,0,0.15);
+        }
+        .review-detail-overlay.open .review-detail-panel { transform: translateY(0); }
+        .review-detail-body { flex: 1; overflow-y: auto; padding: 20px 18px 16px; }
+        .review-detail-actions { display: flex; gap: 12px; padding: 16px 18px 28px; border-top: 1px solid var(--divider); }
+        .review-detail-btn { flex: 1; padding: 14px 20px; border-radius: 14px; font-family: inherit; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .review-detail-btn.primary { background: var(--action); border: none; color: #fff; }
+        .review-detail-btn.primary:active { opacity: 0.9; }
+        .review-detail-btn.secondary { background: var(--bg); border: 1.5px solid var(--divider); color: var(--ink-secondary); }
+        .review-detail-btn.secondary:active { background: var(--bg-hover); }
+        .review-status-badge { display: inline-block; padding: 4px 12px; border-radius: 50px; font-size: 0.72rem; font-weight: 600; margin-top: 12px; cursor: pointer; }
+        .review-status-badge.mastered { background: #d1fae5; color: #059669; }
+        .review-status-badge.retry { background: #fce7f3; color: #c13584; }
+        .review-status-badge.saved { background: #dbeafe; color: #2563eb; }
+
+        /* Side Buttons — premium glass circles */
+        .card-side { position: absolute; right: 10px; bottom: 90px; display: flex; flex-direction: column; align-items: center; gap: 16px; z-index: 20; }
+        .side-btn-wrap { display: flex; flex-direction: column; align-items: center; cursor: pointer; padding: 4px; margin: -4px; -webkit-tap-highlight-color: transparent; }
+        .side-btn-wrap .side-btn { pointer-events: none; }
+        .side-btn {
+            width: 46px; height: 46px; border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(16px) saturate(140%); -webkit-backdrop-filter: blur(16px) saturate(140%);
+            border: 1px solid rgba(255,255,255,0.35);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.3s var(--spring);
+            position: relative;
+        }
+        .side-btn::after {
+            content: ''; position: absolute; inset: -1px; border-radius: 50%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 50%);
+            pointer-events: none; z-index: -1; opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .side-btn:active { transform: scale(0.82); }
+        .side-btn:active::after { opacity: 1; }
+        .side-btn svg { width: 22px; height: 22px; fill: #fff; transition: all 0.3s; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.2)); }
+        .side-btn.active svg { fill: var(--action); }
+        .side-btn.done {
+            background: rgba(237,73,86,0.12); border-color: rgba(237,73,86,0.25);
+            animation: btnDonePop 0.5s var(--spring);
+            box-shadow: 0 0 20px rgba(237,73,86,0.15);
+        }
+        .side-btn.done svg { fill: var(--heart); filter: drop-shadow(0 0 8px rgba(237,73,86,0.4)); }
+        @keyframes btnDonePop { 0%{transform:scale(1)} 25%{transform:scale(1.35)} 55%{transform:scale(0.92)} 100%{transform:scale(1)} }
+        .side-btn.retry {
+            background: rgba(225,48,108,0.15); border-color: rgba(225,48,108,0.3);
+            animation: btnRetryShake 0.45s var(--smooth);
+        }
+        .side-btn.retry svg { fill: var(--brand-coral); }
+        @keyframes btnRetryShake { 0%{transform:translateX(0)} 20%{transform:translateX(-3px)} 40%{transform:translateX(3px)} 60%{transform:translateX(-2px)} 80%{transform:translateX(1px)} 100%{transform:translateX(0)} }
+        .side-btn.saved {
+            background: rgba(0,149,246,0.2); border-color: rgba(0,149,246,0.4);
+        }
+        .side-btn.saved svg { fill: var(--action); }
+        .side-label { font-size: 0.58rem; color: rgba(255,255,255,0.9); margin-top: 2px; text-align: center; font-weight: 600; text-shadow: 0 1px 4px rgba(0,0,0,0.4); }
+
+        .card-pause-indicator {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%) scale(0);
+            width: 68px; height: 68px; border-radius: 50%;
+            background: rgba(0,0,0,0.2); backdrop-filter: blur(16px) saturate(120%);
+            -webkit-backdrop-filter: blur(16px) saturate(120%);
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 20; pointer-events: none;
+            transition: transform 0.25s var(--spring), opacity 0.25s; opacity: 0;
+        }
+        .card-pause-indicator.show { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+        .card-pause-indicator svg { width: 24px; height: 24px; fill: #fff; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.2)); }
+
+        .swipe-hint-lesson {
+            position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
+            display: flex; align-items: center; gap: 4px;
+            color: rgba(255,255,255,0.2); font-size: 0.6rem; z-index: 10;
+            animation: hintBob 2s ease-in-out infinite;
+        }
+        .swipe-hint-lesson svg { width: 10px; height: 10px; fill: rgba(255,255,255,0.2); }
+        .swipe-hint-lesson.hidden { display: none; }
+        @keyframes hintBob { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-3px)} }
+
+        /* === Comments === */
+        .comments-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.35); z-index: 300; opacity: 0; visibility: hidden; transition: all 0.3s; backdrop-filter: blur(3px); }
+        .comments-overlay.open { opacity: 1; visibility: visible; }
+        .comments-panel {
+            position: absolute; bottom: 0; left: 0; right: 0; height: 55%;
+            background: var(--bg-white); border-radius: 20px 20px 0 0;
+            transform: translateY(100%); transition: transform 0.45s var(--out-expo);
+            display: flex; flex-direction: column;
+            box-shadow: 0 -8px 40px rgba(0,0,0,0.1);
+        }
+        .comments-overlay.open .comments-panel { transform: translateY(0); }
+        .comments-handle {
+            width: 36px; height: 4px; background: var(--divider); border-radius: 4px;
+            margin: 10px auto 0;
+        }
+        .comments-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px 12px; border-bottom: 1px solid var(--divider); }
+        .comments-header h3 { font-size: 0.92rem; font-weight: 700; color: var(--ink); }
+        .comments-close-btn { background: none; border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .comments-close-btn svg { width: 20px; height: 20px; fill: var(--ink-muted); }
+        .comments-list { flex: 1; overflow-y: auto; padding: 12px 16px; }
+        .comment-item { display: flex; gap: 12px; margin-bottom: 16px; animation: fadeUp 0.3s var(--out-expo); }
+        .comment-av {
+            width: 30px; height: 30px; border-radius: 50%;
+            background: var(--bg); display: flex; align-items: center; justify-content: center;
+            font-size: 0.65rem; flex-shrink: 0; color: var(--ink-muted); font-weight: 600;
+        }
+        .comment-body { flex: 1; }
+        .comment-name { font-size: 0.78rem; font-weight: 600; margin-bottom: 2px; }
+        .comment-text { font-size: 0.82rem; color: var(--ink-secondary); line-height: 1.45; }
+        .comment-item.ai-reply {
+            background: var(--fill-purple); border-radius: 12px; padding: 12px;
+        }
+        .comment-item.ai-reply .comment-av {
+            background: var(--grad-brand-soft); color: #fff; font-size: 0.55rem;
+        }
+        .comment-item.ai-reply .comment-name { color: var(--brand-magenta); }
+        .comment-item.ai-reply .comment-name .ai-badge {
+            display: inline-block; font-size: 0.5rem; font-weight: 700;
+            background: var(--grad-brand-soft); color: #fff;
+            padding: 1px 5px; border-radius: 4px; margin-left: 3px; vertical-align: middle;
+        }
+        .ai-typing { display: flex; align-items: center; gap: 4px; padding: 8px 0; }
+        .ai-typing span { width: 5px; height: 5px; background: var(--brand-magenta); border-radius: 50%; animation: aiDot 1.4s ease-in-out infinite; }
+        .ai-typing span:nth-child(2) { animation-delay: 0.2s; }
+        .ai-typing span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes aiDot { 0%,80%,100%{opacity:0.2;transform:scale(0.7)} 40%{opacity:1;transform:scale(1.2)} }
+        .comment-time { font-size: 0.6rem; color: var(--ink-muted); margin-top: 3px; }
+        .no-comments { text-align: center; padding: 36px 16px; color: var(--ink-muted); font-size: 0.85rem; line-height: 1.6; }
+        .comments-input-area { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--divider); }
+        .comments-input {
+            flex: 1; padding: 10px 16px; border: 1px solid var(--divider);
+            border-radius: 20px; font-family: inherit; font-size: 0.82rem;
+            outline: none; background: var(--bg); color: var(--ink); transition: border-color 0.2s;
+        }
+        .comments-input::placeholder { color: var(--ink-muted); }
+        .comments-input:focus { border-color: var(--ink-faint); }
+        .comments-send {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: var(--action); border: none;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; flex-shrink: 0;
+            transition: opacity 0.2s;
+        }
+        .comments-send:active { opacity: 0.7; }
+        .comments-send svg { width: 14px; height: 14px; fill: #fff; }
+
+        /* Complete */
+        .complete-card {
+            display: flex; align-items: center; justify-content: center; height: 100%;
+            background: linear-gradient(160deg, #fafafa 0%, #ffffff 40%, #fafafa 100%);
+            position: relative;
+        }
+        .complete-card::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 50% 40%, rgba(131,58,180,0.04) 0%, transparent 60%),
+                        radial-gradient(ellipse at 50% 60%, rgba(252,175,69,0.03) 0%, transparent 50%);
+        }
+        .complete-inner { text-align: center; padding: 40px; animation: completeIn 0.5s var(--spring); position: relative; z-index: 1; }
+        @keyframes completeIn { 0%{opacity:0;transform:scale(0.9)} 100%{opacity:1;transform:scale(1)} }
+        .complete-emoji { font-size: 3.2rem; margin-bottom: 16px; animation: emojiBounce 0.6s var(--bounce); }
+        @keyframes emojiBounce { 0%{transform:scale(0)} 50%{transform:scale(1.2)} 100%{transform:scale(1)} }
+        .complete-title {
+            font-family: 'Sora', sans-serif; font-size: 1.5rem; font-weight: 800;
+            margin-bottom: 6px;
+            background: var(--grad-brand-soft); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .complete-sub { font-size: 0.85rem; color: var(--ink-secondary); margin-bottom: 24px; }
+        .complete-stats { display: flex; justify-content: center; gap: 16px; margin-bottom: 24px; }
+        .complete-stat {
+            text-align: center; padding: 16px 24px; background: var(--bg-white);
+            border-radius: 16px; min-width: 90px;
+            border: 1px solid var(--divider);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+        }
+        .complete-stat-value { font-family: 'Sora', sans-serif; font-size: 1.2rem; font-weight: 800; color: var(--ink); }
+        .complete-stat-value.good { color: var(--heart); }
+        .complete-stat-value.retry { color: var(--brand-coral); }
+        .complete-stat-label { font-size: 0.62rem; color: var(--ink-muted); margin-top: 2px; }
+        .complete-btn {
+            padding: 14px 40px; background: var(--action); color: #fff;
+            border: none; border-radius: 14px; font-family: 'Sora', sans-serif;
+            font-size: 0.9rem; font-weight: 700; cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 16px rgba(0,149,246,0.2);
+            position: relative; overflow: hidden;
+        }
+        .complete-btn::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        .complete-btn:active { transform: scale(0.97); box-shadow: 0 2px 8px rgba(0,149,246,0.15); }
+
+        /* Confetti */
+        .confetti-container { position: absolute; inset: 0; pointer-events: none; z-index: 200; overflow: hidden; }
+        .confetti { position: absolute; width: 5px; height: 5px; border-radius: 1px; }
+
+        /* === Video Loading Spinner === */
+        .video-loading-spinner {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            width: 40px; height: 40px; z-index: 5; pointer-events: none;
+        }
+        .video-loading-spinner::after {
+            content: ''; display: block; width: 100%; height: 100%;
+            border: 3px solid rgba(255,255,255,0.15);
+            border-top-color: rgba(255,255,255,0.8);
+            border-radius: 50%;
+            animation: spinLoader 0.8s linear infinite;
+        }
+        @keyframes spinLoader { to { transform: rotate(360deg); } }
+
+        /* === Hearing (Onboarding) === */
+        .hearing-screen {
+            display: flex; flex-direction: column; padding: 52px 24px 32px;
+            background: var(--bg); min-height: 100%;
+        }
+        .hearing-screen::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 40% 20%, rgba(131,58,180,0.04) 0%, transparent 50%),
+                        radial-gradient(ellipse at 70% 80%, rgba(225,48,108,0.03) 0%, transparent 45%);
+            pointer-events: none;
+        }
+        .hearing-header { text-align: center; margin-bottom: 28px; position: relative; z-index: 1; }
+        .hearing-title {
+            font-family: 'Sora', sans-serif; font-size: 1.5rem; font-weight: 800;
+            color: var(--ink); letter-spacing: -0.02em; line-height: 1.35;
+        }
+        .hearing-sub {
+            font-size: 0.85rem; color: var(--ink-secondary); margin-top: 8px; line-height: 1.5;
+        }
+        .hearing-form { flex: 1; position: relative; z-index: 1; }
+        .hearing-question { margin-bottom: 24px; }
+        .hearing-question-label {
+            font-size: 0.9rem; font-weight: 700; color: var(--ink);
+            display: block; margin-bottom: 12px;
+        }
+        .hearing-options { display: flex; flex-direction: column; gap: 10px; }
+        .hearing-option {
+            display: flex; align-items: center; padding: 14px 18px;
+            background: var(--bg-white); border: 2px solid var(--divider);
+            border-radius: var(--radius-sm); cursor: pointer;
+            font-size: 0.88rem; font-weight: 500; color: var(--ink);
+            transition: all 0.2s var(--smooth);
+        }
+        .hearing-option:hover { border-color: var(--ink-faint); background: var(--bg-hover); }
+        .hearing-option.selected {
+            border-color: var(--action); background: var(--action-light);
+            color: var(--action); font-weight: 700;
+        }
+        .hearing-option input { display: none; }
+        .hearing-btn-wrap { margin-top: auto; padding-top: 24px; position: relative; z-index: 1; }
+        .hearing-cta {
+            width: 100%; padding: 16px 24px;
+            background: var(--action); color: #fff; border: none;
+            font-family: 'Sora', sans-serif; font-size: 0.95rem; font-weight: 700;
+            border-radius: 14px; cursor: pointer;
+            transition: all 0.25s var(--smooth);
+            box-shadow: 0 4px 16px rgba(0,149,246,0.25);
+        }
+        .hearing-cta:hover { background: var(--action-hover); }
+        .hearing-cta:active { transform: scale(0.98); }
+        .hearing-cta:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* === おすすめの先生（オンボーディング） === */
+        .recommended-onboard-screen {
+            display: flex; flex-direction: column; padding: 52px 24px 32px;
+            background: var(--bg); min-height: 100%;
+        }
+        .recommended-onboard-screen::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 40% 20%, rgba(131,58,180,0.04) 0%, transparent 50%),
+                        radial-gradient(ellipse at 70% 80%, rgba(225,48,108,0.03) 0%, transparent 45%);
+            pointer-events: none;
+        }
+        .recommended-onboard-header { text-align: center; margin-bottom: 20px; position: relative; z-index: 1; }
+        .recommended-onboard-title {
+            font-family: 'Sora', sans-serif; font-size: 1.4rem; font-weight: 800;
+            color: var(--ink); letter-spacing: -0.02em; line-height: 1.35;
+        }
+        .recommended-onboard-sub { font-size: 0.8rem; color: var(--ink-secondary); margin-top: 6px; }
+        .recommended-onboard-scroll {
+            display: flex; gap: 12px; overflow-x: auto; padding: 8px 0 20px;
+            scrollbar-width: none; flex: 1; align-items: flex-start; justify-content: center;
+            position: relative; z-index: 1;
+        }
+        .recommended-onboard-scroll::-webkit-scrollbar { display: none; }
+        .recommended-onboard-btn-wrap { padding-top: 16px; position: relative; z-index: 1; }
+    </style>
+</head>
+<body>
+<div class="phone-frame">
+<div class="splash" id="splashScreen">
+    <div class="splash-bird"><svg viewBox="0 0 120 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="birdGrad1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#833ab4"/><stop offset="50%" stop-color="#c13584"/><stop offset="100%" stop-color="#e1306c"/></linearGradient>
+            <linearGradient id="birdGrad2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#833ab4"/><stop offset="100%" stop-color="#c13584"/></linearGradient>
+        </defs>
+        <ellipse cx="60" cy="52" rx="22" ry="18" fill="url(#birdGrad1)"/>
+        <ellipse cx="60" cy="55" rx="16" ry="12" fill="white" opacity="0.35"/>
+        <circle cx="74" cy="38" r="14" fill="url(#birdGrad2)"/>
+        <ellipse cx="66" cy="44" rx="5" ry="3" fill="#e1306c" opacity="0.25"/>
+        <circle cx="79" cy="35" r="4.5" fill="white"/>
+        <circle cx="80" cy="34.5" r="2.5" fill="#262626"/>
+        <circle cx="81.5" cy="33.5" r="1" fill="white"/>
+        <path d="M86 38 L96 40 L86 43Z" fill="#e1306c"/>
+        <path d="M86 40.5 L96 40 L86 43Z" fill="#e1306c"/>
+        <path d="M44 48 C32 36, 14 26, 2 22 C16 30, 28 38, 40 48Z" fill="#e1306c" opacity="0.3"/>
+        <path d="M72 46 C82 34, 96 24, 112 18 C98 28, 86 38, 76 46Z" fill="url(#birdGrad1)"/>
+        <path d="M40 58 C34 66, 26 76, 18 86 C28 78, 34 68, 40 60Z" fill="url(#birdGrad2)"/>
+        <path d="M46 60 C42 68, 36 78, 30 90 C38 80, 42 70, 46 62Z" fill="#e1306c" opacity="0.3"/>
+    </svg></div>
+    <div class="splash-title">Swallow</div>
+    <div class="splash-sub">Learn English · Fly Higher</div>
+    <div class="splash-loader"></div>
+</div>
+<div class="app">
+    <!-- HEARING (初回のみ) -->
+    <div class="screen hearing-screen" id="hearingScreen">
+        <div class="hearing-header">
+            <h1 class="hearing-title">あなたに合った<br>学習を始めましょう</h1>
+            <p class="hearing-sub">2つ質問に答えてください</p>
+        </div>
+        <div class="hearing-form">
+            <div class="hearing-question">
+                <label class="hearing-question-label">1. あなたの英語学習の目的は？</label>
+                <div class="hearing-options">
+                    <label class="hearing-option" data-purpose="work"><input type="radio" name="purpose" value="work">仕事で使う</label>
+                    <label class="hearing-option" data-purpose="travel"><input type="radio" name="purpose" value="travel">海外旅行</label>
+                    <label class="hearing-option" data-purpose="hobby"><input type="radio" name="purpose" value="hobby">趣味</label>
+                    <label class="hearing-option" data-purpose="exam"><input type="radio" name="purpose" value="exam">資格試験</label>
+                    <label class="hearing-option" data-purpose="other"><input type="radio" name="purpose" value="other">その他</label>
+                </div>
+            </div>
+            <div class="hearing-question">
+                <label class="hearing-question-label">2. 現在の英語レベルは？</label>
+                <div class="hearing-options">
+                    <label class="hearing-option" data-level="beginner"><input type="radio" name="level" value="beginner">初心者</label>
+                    <label class="hearing-option" data-level="junior"><input type="radio" name="level" value="junior">中学レベル</label>
+                    <label class="hearing-option" data-level="senior"><input type="radio" name="level" value="senior">高校レベル</label>
+                    <label class="hearing-option" data-level="daily"><input type="radio" name="level" value="daily">日常会話できる</label>
+                    <label class="hearing-option" data-level="business"><input type="radio" name="level" value="business">ビジネスレベル</label>
+                </div>
+            </div>
+        </div>
+        <div class="hearing-btn-wrap">
+            <button class="hearing-cta" id="hearingCtaBtn" onclick="completeHearing()" disabled>次へ</button>
+        </div>
+    </div>
+
+    <!-- おすすめの先生（初回のみ・ヒアリング直後） -->
+    <div class="screen recommended-onboard-screen" id="recommendedScreen">
+        <div class="recommended-onboard-header">
+            <h1 class="recommended-onboard-title">他にもこんな先生が〜！</h1>
+            <p class="recommended-onboard-sub">フォローまたは非表示を選んでね</p>
+        </div>
+        <div class="recommended-onboard-scroll" id="recommendedOnboardList"></div>
+        <div class="recommended-onboard-btn-wrap">
+            <button class="hearing-cta" onclick="startFromRecommended()">学習を始める</button>
+        </div>
+    </div>
+
+    <!-- HOME -->
+    <div class="screen active" id="homeScreen">
+        <div class="home-header">
+            <div class="home-logo">
+                <div class="logo-mark"><svg viewBox="0 0 120 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:26px;height:22px"><ellipse cx="60" cy="52" rx="22" ry="18" fill="url(#birdGrad1)"/><ellipse cx="60" cy="55" rx="16" ry="12" fill="white" opacity="0.35"/><circle cx="74" cy="38" r="14" fill="url(#birdGrad2)"/><circle cx="79" cy="35" r="4.5" fill="white"/><circle cx="80" cy="34.5" r="2.5" fill="#262626"/><circle cx="81.5" cy="33.5" r="1" fill="white"/><path d="M86 38 L96 40 L86 43Z" fill="#e1306c"/><path d="M44 48 C32 36, 14 26, 2 22 C16 30, 28 38, 40 48Z" fill="#e1306c" opacity="0.3"/><path d="M72 46 C82 34, 96 24, 112 18 C98 28, 86 38, 76 46Z" fill="url(#birdGrad1)"/><path d="M40 58 C34 66, 26 76, 18 86 C28 78, 34 68, 40 60Z" fill="url(#birdGrad2)"/></svg></div>
+                <span class="logo-text">Swallow</span>
+            </div>
+            <button class="header-btn" onclick="showScreen('settingsScreen')"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 00-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1112 8.4a3.6 3.6 0 010 7.2z" fill="currentColor"/></svg></button>
+        </div>
+        <div class="home-content">
+            <div class="streak-card">
+                <div class="streak-hero">
+                    <span class="streak-fire">🔥</span>
+                    <div><div class="streak-number" id="streakNumber">0</div></div>
+                    <div class="streak-unit">日連続</div>
+                </div>
+                <div class="streak-meta">
+                    <div class="streak-meta-item"><span class="streak-meta-value" id="learnedCount">25</span><span class="streak-meta-label">学習済み</span></div>
+                    <div class="streak-meta-divider"></div>
+                    <div class="streak-meta-item"><span class="streak-meta-value" id="remainingCount">125</span><span class="streak-meta-label">残り</span></div>
+                </div>
+            </div>
+            <div id="ctaArea"></div>
+            <div class="section" id="otherTeachersSection">
+                <div class="section-header"><h2 class="section-title">他にもこんな先生が〜！</h2><button class="section-link" onclick="showScreen('teachersScreen')">すべて見る</button></div>
+                <div class="recommended-scroll" id="recommendedList"></div>
+            </div>
+            <div class="section">
+                <div class="section-header"><h2 class="section-title">フォロー中の先生</h2><button class="section-link" onclick="showScreen('teachersScreen')">すべて見る</button></div>
+                <div class="following-scroll" id="followingList"></div>
+            </div>
+        </div>
+        <nav class="bottom-nav" id="navHome"></nav>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="screen" id="settingsScreen">
+        <div class="page-header"><div style="width:32px"></div><h1 class="page-title">設定</h1><div style="width:32px"></div></div>
+        <div class="settings-content">
+            <div class="setting-group"><div class="setting-group-title">学習設定</div><div class="setting-item"><span class="setting-label">1日のフレーズ数</span><div class="phrase-selector" id="phraseSelector"><button class="phrase-option selected" data-count="1">1</button><button class="phrase-option" data-count="3">3</button><button class="phrase-option" data-count="5">5</button><button class="phrase-option" data-count="8">8</button></div></div></div>
+            <div class="setting-group"><div class="setting-group-title">フォロー中の先生</div><div class="setting-item" onclick="showScreen('teachersScreen')"><span class="setting-label">先生を管理</span><span class="setting-value"><span id="followCountDisplay">1人</span><svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor"/></svg></span></div></div>
+            <div class="setting-group"><div class="setting-group-title">データ管理</div><div class="setting-item" onclick="confirmResetData()"><span class="setting-label" style="color:#ef4444">学習データをリセット</span><span class="setting-value"><svg viewBox="0 0 24 24" style="fill:#ef4444"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></span></div></div>
+        </div>
+        <nav class="bottom-nav" id="navSettings"></nav>
+    </div>
+
+    <!-- REVIEW -->
+    <div class="screen" id="reviewScreen">
+        <div class="page-header"><div style="width:32px"></div><h1 class="page-title">学習履歴</h1><div style="width:32px"></div></div>
+        <div class="review-content" id="reviewContent"></div>
+        <nav class="bottom-nav" id="navReview"></nav>
+    </div>
+
+    <!-- TEACHERS -->
+    <div class="screen" id="teachersScreen">
+        <div class="page-header"><button class="back-btn" onclick="goBackFromTeachers()"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" fill="currentColor"/></svg></button><h1 class="page-title">先生一覧</h1><div style="width:32px"></div></div>
+        <div class="teachers-content" id="teachersList"></div>
+        <nav class="bottom-nav" id="navTeachers"></nav>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="screen" id="profileScreen">
+        <div class="page-header"><button class="back-btn" onclick="showScreen(prevScreen||'homeScreen')"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" fill="currentColor"/></svg></button><h1 class="page-title" id="profileTitle"></h1><div style="width:32px"></div></div>
+        <div id="profileContent"></div>
+        <nav class="bottom-nav" id="navProfile"></nav>
+    </div>
+
+    <!-- LESSON -->
+    <div class="screen lesson-screen" id="lessonScreen">
+        <div class="lesson-header"><div class="lesson-header-left"><div class="lesson-logo"><svg viewBox="0 0 120 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:22px;height:18px"><ellipse cx="60" cy="52" rx="22" ry="18" fill="url(#birdGrad1)"/><ellipse cx="60" cy="55" rx="16" ry="12" fill="white" opacity="0.35"/><circle cx="74" cy="38" r="14" fill="url(#birdGrad2)"/><circle cx="79" cy="35" r="4.5" fill="white"/><circle cx="80" cy="34.5" r="2.5" fill="#262626"/><circle cx="81.5" cy="33.5" r="1" fill="white"/><path d="M86 38 L96 40 L86 43Z" fill="#e1306c"/><path d="M44 48 C32 36, 14 26, 2 22 C16 30, 28 38, 40 48Z" fill="#e1306c" opacity="0.3"/><path d="M72 46 C82 34, 96 24, 112 18 C98 28, 86 38, 76 46Z" fill="url(#birdGrad1)"/><path d="M40 58 C34 66, 26 76, 18 86 C28 78, 34 68, 40 60Z" fill="url(#birdGrad2)"/></svg></div><span class="lesson-logo-text">Swallow</span></div><button class="lesson-close" onclick="closeLesson()"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor"/></svg></button><div class="lesson-header-right"><button class="mute-btn" id="muteBtn" onclick="event.stopPropagation();toggleMute()"><svg id="muteIcon" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" fill="currentColor"/></svg><svg id="unmuteIcon" viewBox="0 0 24 24" style="display:none"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" fill="currentColor"/></svg></button><span class="lesson-progress" id="lessonProgressText">1 / 1</span></div></div>
+        <div class="swipe-container" id="swipeContainer"><div class="cards-wrapper" id="cardsWrapper"></div></div>
+        <div class="swipe-hint-lesson" id="swipeHint"><svg viewBox="0 0 24 24"><path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z" fill="currentColor"/></svg>スワイプまたはホイールで次へ</div>
+        <div class="comments-overlay" id="commentsOverlay" onclick="closeComments()"><div class="comments-panel" onclick="event.stopPropagation()"><div class="comments-handle"></div><div class="comments-header"><h3>コメント</h3><button class="comments-close-btn" onclick="closeComments()"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor"/></svg></button></div><div class="comments-list" id="commentsList"></div><div class="comments-input-area"><input type="text" class="comments-input" id="commentInput" placeholder="コメントを入力..." onkeydown="if(event.key==='Enter')postComment()"><button class="comments-send" onclick="postComment()"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button></div></div></div>
+        <div class="explain-overlay" id="explainOverlay" onclick="closeExplain()"><div class="explain-panel" onclick="event.stopPropagation()"><div class="explain-handle"></div><div class="explain-header"><h3>解説</h3><button class="explain-close-btn" onclick="closeExplain()"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor"/></svg></button></div><div class="explain-body" id="explainBody"></div></div></div>
+    </div>
+    <div class="review-detail-overlay" id="reviewDetailOverlay" onclick="closeReviewDetail()"><div class="review-detail-panel" onclick="event.stopPropagation()"><div class="explain-handle"></div><div class="explain-header"><h3>学習履歴</h3><button class="explain-close-btn" onclick="closeReviewDetail()"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor"/></svg></button></div><div class="review-detail-body" id="reviewDetailBody"></div><div class="review-detail-actions"><button class="review-detail-btn secondary" onclick="closeReviewDetail()">閉じる</button><button class="review-detail-btn primary" id="reviewDetailStudyBtn">学習する</button></div></div></div>
+</div>
+</div>
+
+<script>
+var HEARING_KEY='swallow_hearing_done';
+var REVIEW_DATA_KEY='swallow_review_data';
+var STREAK_KEY='swallow_streak';
+var MUTE_KEY='swallow_muted';
+var DAILY_COUNT_KEY='swallow_daily_count';
+var FOLLOWING_KEY='swallow_following';
+var HIDDEN_KEY='swallow_hidden';
+function getTodayKey(){var d=new Date();return 'swallow_daily_'+d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function isTodayDone(){try{return !!localStorage.getItem(getTodayKey());}catch(e){return false;}}
+function setTodayDone(){try{localStorage.setItem(getTodayKey(),'1');}catch(e){}}
+function getDateStr(d){return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function loadStreak(){
+    try{var s=localStorage.getItem(STREAK_KEY);if(s)return JSON.parse(s);}catch(e){}
+    return {count:0,lastDate:null};
+}
+function saveStreak(s){try{localStorage.setItem(STREAK_KEY,JSON.stringify(s));}catch(e){}}
+function updateStreak(){
+    var s=loadStreak();
+    var today=getDateStr(new Date());
+    if(s.lastDate===today)return s.count;
+    var yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);
+    var yStr=getDateStr(yesterday);
+    if(s.lastDate===yStr){s.count++;s.lastDate=today;}
+    else{s.count=1;s.lastDate=today;}
+    saveStreak(s);return s.count;
+}
+function getStreakCount(){
+    var s=loadStreak();
+    var today=getDateStr(new Date());
+    if(s.lastDate===today)return s.count;
+    var yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);
+    if(s.lastDate===getDateStr(yesterday))return s.count;
+    return 0;
+}
+function loadMuteState(){try{var m=localStorage.getItem(MUTE_KEY);return m===null?true:m==='true';}catch(e){return true;}}
+function saveMuteState(m){try{localStorage.setItem(MUTE_KEY,m?'true':'false');}catch(e){}}
+function loadDailyCount(){try{var c=localStorage.getItem(DAILY_COUNT_KEY);return c?parseInt(c,10):1;}catch(e){return 1;}}
+function saveDailyCount(c){try{localStorage.setItem(DAILY_COUNT_KEY,String(c));}catch(e){}}
+function loadFollowingState(){try{var f=localStorage.getItem(FOLLOWING_KEY);if(f)return JSON.parse(f);}catch(e){}return null;}
+function saveFollowingState(){var f={};teachers.forEach(function(t){f[t.id]=t.following;});try{localStorage.setItem(FOLLOWING_KEY,JSON.stringify(f));}catch(e){}}
+function loadHiddenTeachers(){try{var h=localStorage.getItem(HIDDEN_KEY);if(h)return JSON.parse(h);}catch(e){}return {};}
+function saveHiddenTeachers(){try{localStorage.setItem(HIDDEN_KEY,JSON.stringify(hiddenTeachers));}catch(e){}}
+(function(){
+    if(!localStorage.getItem(HEARING_KEY)){
+        var h=document.getElementById('homeScreen'),g=document.getElementById('hearingScreen');
+        if(h)h.classList.remove('active');
+        if(g)g.classList.add('active');
+    }
+})();
+function avHtml(t){
+    if(t.avatarImg) return '<img src="'+t.avatarImg+'" alt="'+t.name+'" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">';
+    return t.avatar;
+}
+
+var teachers=[
+    {id:'masa',name:'まさ',avatar:'M',avatarImg:'masa_avatar.png',level:'初級〜中級',style:'casual',styleLabel:'カジュアル',levelLabel:'初中級',following:true,bio:'英語コーチ。日本人が話しやすい英語を追求。',ig:'masaenglish',posts:3,followers:520},
+    {id:'miki',name:'みき',avatar:'み',avatarImg:null,level:'中級〜上級',style:'formal',styleLabel:'フォーマル',levelLabel:'中上級',following:true,bio:'ビジネス英語専門。丁寧な表現を丁寧に。',ig:'miki_english',posts:2,followers:320},
+    {id:'masaki',name:'まさき',avatar:'ま',avatarImg:null,level:'初級〜中級',style:'casual',styleLabel:'カジュアル',levelLabel:'初中級',following:true,bio:'日常会話からビジネスまで。実践的な英語を。',ig:'masaki_english',posts:3,followers:280}
+];
+var phrases=[
+    {teacher:'masa',en:'What do you <span class="hl">wanna</span> do?',enPlain:'What do you wanna do?',ja:'何がしたい？',choices:['何がしたい？','何をする？','何をしたいの？','どうする？'],correctIndex:0,category:'日常会話',video:'masa1.MOV',explain:'<p><b>wanna</b> は <b>want to</b> の口語表現です。ネイティブの日常会話では非常によく使われます。</p>',examples:[{en:'I wanna go home.',ja:'家に帰りたい。'},{en:'Do you wanna come with us?',ja:'一緒に来たい？'}]},
+    {teacher:'masa',en:'(編集してください)',enPlain:'(編集してください)',ja:'(編集してください)',choices:['(編集してください)','(編集してください)','(編集してください)','(編集してください)'],correctIndex:0,category:'日常会話',video:'masa2.MOV',explain:'<p>解説を編集してください。</p>',examples:[]},
+    {teacher:'masa',en:'(編集してください)',enPlain:'(編集してください)',ja:'(編集してください)',choices:['(編集してください)','(編集してください)','(編集してください)','(編集してください)'],correctIndex:0,category:'日常会話',video:'masa3.MOV',explain:'<p>解説を編集してください。</p>',examples:[]},
+    {teacher:'miki',en:'(編集してください)',enPlain:'(編集してください)',ja:'(編集してください)',choices:['(編集してください)','(編集してください)','(編集してください)','(編集してください)'],correctIndex:0,category:'日常会話',video:'miki1.MOV',explain:'<p>解説を編集してください。</p>',examples:[]},
+    {teacher:'miki',en:'(編集してください)',enPlain:'(編集してください)',ja:'(編集してください)',choices:['(編集してください)','(編集してください)','(編集してください)','(編集してください)'],correctIndex:0,category:'日常会話',video:'miki2.MOV',explain:'<p>解説を編集してください。</p>',examples:[]},
+    {teacher:'masaki',en:'(編集してください)',enPlain:'(編集してください)',ja:'(編集してください)',choices:['(編集してください)','(編集してください)','(編集してください)','(編集してください)'],correctIndex:0,category:'日常会話',video:'masaki1.MOV',explain:'<p>解説を編集してください。</p>',examples:[]},
+    {teacher:'masaki',en:'(編集してください)',enPlain:'(編集してください)',ja:'(編集してください)',choices:['(編集してください)','(編集してください)','(編集してください)','(編集してください)'],correctIndex:0,category:'日常会話',video:'masaki2.MOV',explain:'<p>解説を編集してください。</p>',examples:[]},
+    {teacher:'masaki',en:'(編集してください)',enPlain:'(編集してください)',ja:'(編集してください)',choices:['(編集してください)','(編集してください)','(編集してください)','(編集してください)'],correctIndex:0,category:'日常会話',video:'masaki3.MOV',explain:'<p>解説を編集してください。</p>',examples:[]}
+];
+var commentsData={},currentCommentIndex=0,dailyCount=loadDailyCount(),currentIndex=0,isAnimating=false,isMuted=loadMuteState(),checkedTeachers={};
+var prevScreen='homeScreen';
+var reviewData=[],reviewFilter='all';
+function loadReviewData(){try{var d=localStorage.getItem(REVIEW_DATA_KEY);if(d)reviewData=JSON.parse(d);}catch(e){}}
+function saveReviewData(){try{localStorage.setItem(REVIEW_DATA_KEY,JSON.stringify(reviewData));}catch(e){}}
+var hiddenTeachers=loadHiddenTeachers();
+var hasInteractedWithRecommended=false;
+// Restore following state from localStorage
+(function(){
+    var saved=loadFollowingState();
+    if(saved){teachers.forEach(function(t){if(saved.hasOwnProperty(t.id))t.following=saved[t.id];});}
+})();
+var hearingPurpose='',hearingLevel='';
+
+function initHearing(){
+    document.querySelectorAll('.hearing-option[data-purpose]').forEach(function(el){
+        el.addEventListener('click',function(){
+            document.querySelectorAll('.hearing-option[data-purpose]').forEach(function(o){o.classList.remove('selected');});
+            el.classList.add('selected');
+            el.querySelector('input').checked=true;
+            hearingPurpose=el.getAttribute('data-purpose');
+            updateHearingBtn();
+        });
+    });
+    document.querySelectorAll('.hearing-option[data-level]').forEach(function(el){
+        el.addEventListener('click',function(){
+            document.querySelectorAll('.hearing-option[data-level]').forEach(function(o){o.classList.remove('selected');});
+            el.classList.add('selected');
+            el.querySelector('input').checked=true;
+            hearingLevel=el.getAttribute('data-level');
+            updateHearingBtn();
+        });
+    });
+}
+function updateHearingBtn(){
+    var btn=document.getElementById('hearingCtaBtn');
+    if(btn)btn.disabled=!(hearingPurpose&&hearingLevel);
+}
+function completeHearing(){
+    if(!hearingPurpose||!hearingLevel)return;
+    try{
+        localStorage.setItem(HEARING_KEY,JSON.stringify({purpose:hearingPurpose,level:hearingLevel,at:Date.now()}));
+    }catch(e){}
+    // Auto-follow top scoring teachers based on hearing
+    var recs=getRecommendedTeachers();
+    var topScore=recs.length>0?recs[0].score:0;
+    if(topScore>0){
+        recs.forEach(function(r){
+            if(r.score>=topScore&&r.score>0)r.t.following=true;
+        });
+        saveFollowingState();
+    }
+    renderRecommendedOnboard();
+    showScreen('recommendedScreen');
+}
+function renderRecommendedOnboard(){
+    var el=document.getElementById('recommendedOnboardList');if(!el)return;
+    var recs=getRecommendedTeachers().filter(function(r){return !r.t.following&&!hiddenTeachers[r.t.id];});
+    var html=recs.map(function(r){
+        var t=r.t,match=r.score>0;
+        var tag=(t.styleLabel||'')+(t.levelLabel?'×'+t.levelLabel:'');
+        var av=t.avatarImg?'<img src="'+t.avatarImg+'" alt="'+t.name+'">':'<span style="font-family:Sora;font-size:1.2rem;font-weight:800;color:var(--ink)">'+t.avatar+'</span>';
+        var fbCls='rec-follow-btn do-follow';
+        return '<div class="recommended-card'+(match?' has-match':'')+'" onclick="openProfile(\''+t.id+'\')"><div class="avatar-wrap">'+av+'</div><span class="rec-name">'+t.name+'</span><span class="rec-tag">'+tag+'</span><div class="rec-actions"><button class="'+fbCls+'" onclick="event.stopPropagation();toggleFollow(\''+t.id+'\')">フォロー</button><button class="rec-hide-btn" onclick="event.stopPropagation();hideTeacher(\''+t.id+'\')">非表示</button></div></div>';
+    }).join('');
+    el.innerHTML=html||'<div style="padding:20px;text-align:center;color:var(--ink-muted);font-size:0.85rem;">おすすめの先生がいません</div>';
+}
+function startFromRecommended(){
+    showScreen('homeScreen');
+}
+
+function goBackFromTeachers(){showScreen(prevScreen||'homeScreen');}
+function toggleMute(){isMuted=!isMuted;saveMuteState(isMuted);document.getElementById('muteIcon').style.display=isMuted?'block':'none';document.getElementById('unmuteIcon').style.display=isMuted?'none':'block';document.querySelectorAll('.card-video').forEach(function(v){v.muted=isMuted;});}
+
+function showScreen(id){
+    var splash=document.getElementById('splashScreen');
+    if(splash&&!splash.classList.contains('hide'))splash.classList.add('hide');
+    var current=document.querySelector('.screen.active');
+    if(current&&current.id)prevScreen=current.id;
+    document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+    document.getElementById(id).classList.add('active');
+    renderAllNavs(id);updateUI();
+}
+
+function navHTML(activeScreen){
+    var items=[
+        {screen:'homeScreen',label:'ホーム',icon:'<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" fill="currentColor"/>'},
+        {screen:'lessonScreen',label:'ショート',icon:'<path d="M8 5v14l11-7z" fill="currentColor"/>'},
+        {screen:'reviewScreen',label:'学習履歴',icon:'<path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" fill="currentColor"/>'},
+        {screen:'settingsScreen',label:'設定',icon:'<path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 00-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1112 8.4a3.6 3.6 0 010 7.2z" fill="currentColor"/>'}
+    ];
+    return items.map(function(it){
+        var cls=(it.screen===activeScreen)?'nav-item active':'nav-item';
+        var action=(it.screen==='lessonScreen')?'startLesson()':"showScreen('"+it.screen+"')";
+        return '<button class="'+cls+'" onclick="'+action+'"><svg viewBox="0 0 24 24">'+it.icon+'</svg><span>'+it.label+'</span></button>';
+    }).join('');
+}
+function renderAllNavs(a){['navHome','navSettings','navTeachers','navProfile','navReview'].forEach(function(n){var e=document.getElementById(n);if(e)e.innerHTML=navHTML(a);});}
+function getHearingData(){
+    try{var h=localStorage.getItem(HEARING_KEY);if(h)return JSON.parse(h);}catch(e){}
+    return null;
+}
+function getRecommendedTeachers(){
+    var h=getHearingData();
+    var scored=teachers.filter(function(t){return t.styleLabel&&t.levelLabel;}).map(function(t){
+        var score=0;
+        if(h){
+            var p=h.purpose,l=h.level;
+            if(t.style==='casual'){if(p==='travel'||p==='hobby')score+=2;if(l==='beginner'||l==='junior')score+=2;}
+            if(t.style==='formal'){if(p==='work'||p==='exam')score+=2;if(l==='business'||l==='daily')score+=2;}
+            if(t.levelLabel.indexOf('初')!==-1||t.levelLabel.indexOf('中')!==-1){if(l==='beginner'||l==='junior'||l==='senior')score+=1;}
+            if(t.levelLabel.indexOf('上')!==-1){if(l==='business'||l==='daily')score+=1;}
+        }
+        return {t:t,score:score};
+    });
+    scored.sort(function(a,b){return b.score-a.score;});
+    return scored;
+}
+function renderRecommendedTeachers(){
+    var el=document.getElementById('recommendedList');if(!el)return;
+    var sect=document.getElementById('otherTeachersSection');
+    var recs=getRecommendedTeachers().filter(function(r){return !r.t.following&&!hiddenTeachers[r.t.id];});
+    if(hasInteractedWithRecommended||recs.length===0){
+        if(sect)sect.style.display='none';
+        return;
+    }
+    if(sect)sect.style.display='block';
+    var html=recs.map(function(r){
+        var t=r.t,match=r.score>0;
+        var tag=(t.styleLabel||'')+(t.levelLabel?'×'+t.levelLabel:'');
+        var av=t.avatarImg?'<img src="'+t.avatarImg+'" alt="'+t.name+'">':'<span style="font-family:Sora;font-size:1.2rem;font-weight:800;color:var(--ink)">'+t.avatar+'</span>';
+        var fbCls='rec-follow-btn do-follow';
+        return '<div class="recommended-card'+(match?' has-match':'')+'" onclick="openProfile(\''+t.id+'\')"><div class="avatar-wrap">'+av+'</div><span class="rec-name">'+t.name+'</span><span class="rec-tag">'+tag+'</span><div class="rec-actions"><button class="'+fbCls+'" onclick="event.stopPropagation();toggleFollow(\''+t.id+'\')">フォロー</button><button class="rec-hide-btn" onclick="event.stopPropagation();hideTeacher(\''+t.id+'\')">非表示</button></div></div>';
+    }).join('');
+    el.innerHTML=html||'<div style="padding:20px;text-align:center;color:var(--ink-muted);font-size:0.85rem;">おすすめの先生がいません</div>';
+}
+function renderHomeCTA(){var el=document.getElementById('ctaArea');if(!el)return;var done=isTodayDone();if(done){el.innerHTML='<div class="cta-btn cta-done"><span class="cta-done-emoji">&#127881;</span>素晴らしい！学習済み！</div>';}else{el.innerHTML='<button class="cta-btn" onclick="startLesson()"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>今日の学習を始める<span id="dailyCountBtn" style="display:none">'+dailyCount+'</span></button>';}}
+function updateUI(){
+    renderRecommendedTeachers();renderRecommendedOnboard();renderFollowing();renderTeachers();renderReview();renderHomeCTA();
+    var fc=document.getElementById('followCountDisplay');if(fc)fc.textContent=teachers.filter(function(t){return t.following;}).length+'人';
+    var dc=document.getElementById('dailyCountBtn');if(dc)dc.textContent=dailyCount;
+    // Streak
+    var sn=document.getElementById('streakNumber');if(sn)sn.textContent=getStreakCount();
+    // Learned / Remaining counts
+    var lc=document.getElementById('learnedCount');if(lc)lc.textContent=reviewData.length;
+    var rc=document.getElementById('remainingCount');if(rc)rc.textContent=Math.max(0,phrases.length-reviewData.length);
+}
+
+function renderFollowing(){
+    var following=teachers.filter(function(t){return t.following;});
+    var html=following.length>0?following.map(function(t){
+        var hasPhrases=phrases.some(function(p){return p.teacher===t.id;});
+        var unchecked=hasPhrases&&!checkedTeachers[t.id];
+        var ringCls='avatar-ring'+(unchecked?' has-unchecked':'');
+        return '<div class="following-item" onclick="openProfile(\''+t.id+'\')"><div class="'+ringCls+'"><div class="avatar-inner">'+avHtml(t)+'</div></div><span class="following-name">'+t.name+'</span></div>';
+    }).join(''):'<div style="padding:24px 16px;text-align:center;color:var(--ink-muted);font-size:0.85rem;">フォローするとここに表示されます</div>';
+    document.getElementById('followingList').innerHTML=html;
+}
+function renderTeachers(){
+    var html=teachers.map(function(t,i){
+        var levelText=(t.styleLabel&&t.levelLabel)?(t.styleLabel+'×'+t.levelLabel):t.level;
+        return '<div class="teacher-card" style="animation-delay:'+i*0.06+'s" onclick="openProfile(\''+t.id+'\')"><div class="teacher-card-avatar">'+avHtml(t)+'</div><div class="teacher-card-info"><div class="teacher-card-name">'+t.name+'</div><div class="teacher-card-level">'+levelText+'</div></div><button class="follow-btn '+(t.following?'is-following':'do-follow')+'" onclick="event.stopPropagation();toggleFollow(\''+t.id+'\')">'+(t.following?'フォロー中':'フォロー')+'</button></div>';
+    }).join('');
+    document.getElementById('teachersList').innerHTML=html;
+}
+function toggleFollow(id){teachers=teachers.map(function(t){if(t.id===id)t.following=!t.following;return t;});saveFollowingState();hasInteractedWithRecommended=true;updateUI();}
+function hideTeacher(id){hiddenTeachers[id]=true;saveHiddenTeachers();hasInteractedWithRecommended=true;updateUI();}
+
+function renderReview(){
+    var el=document.getElementById('reviewContent');if(!el)return;
+    if(reviewData.length===0){
+        el.innerHTML='<div style="text-align:center;padding:60px 20px;"><div style="font-size:3rem;margin-bottom:12px;">📚</div><div style="font-size:0.95rem;color:var(--ink-secondary);line-height:1.6;">まだ復習するフレーズがありません</div><div style="font-size:0.8rem;color:var(--ink-muted);margin-top:6px;">ショートでレッスンを完了すると<br>ここに学習済みフレーズが表示されます</div><button class="cta-btn" style="margin:24px auto 0;width:auto;padding:12px 32px;" onclick="startLesson()"><svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:#fff"><path d="M8 5v14l11-7z"/></svg>レッスンを始める</button></div>';
+        return;
+    }
+    var filtered=reviewData;
+    if(reviewFilter==='mastered')filtered=reviewData.filter(function(r){return r.status==='mastered';});
+    if(reviewFilter==='retry')filtered=reviewData.filter(function(r){return r.status==='retry';});
+    if(reviewFilter==='saved')filtered=reviewData.filter(function(r){return r.status==='saved';});
+    var mc=reviewData.filter(function(r){return r.status==='mastered';}).length;
+    var rc=reviewData.filter(function(r){return r.status==='retry';}).length;
+    var sc=reviewData.filter(function(r){return r.status==='saved';}).length;
+    var html='<div style="display:flex;gap:8px;padding:16px 16px 0;flex-wrap:wrap;"><div style="flex:1;min-width:70px;background:var(--bg-white);border-radius:var(--radius);padding:16px;text-align:center;border:1px solid var(--divider);"><div style="font-family:Sora;font-size:1.4rem;font-weight:800;color:var(--ink);">'+reviewData.length+'</div><div style="font-size:0.65rem;color:var(--ink-muted);margin-top:2px;">合計</div></div><div style="flex:1;min-width:70px;background:var(--bg-white);border-radius:var(--radius);padding:16px;text-align:center;border:1px solid var(--divider);"><div style="font-family:Sora;font-size:1.4rem;font-weight:800;color:#059669;">'+mc+'</div><div style="font-size:0.65rem;color:var(--ink-muted);margin-top:2px;">聞き取れた</div></div><div style="flex:1;min-width:70px;background:var(--bg-white);border-radius:var(--radius);padding:16px;text-align:center;border:1px solid var(--divider);"><div style="font-family:Sora;font-size:1.4rem;font-weight:800;color:var(--brand-coral);">'+rc+'</div><div style="font-size:0.65rem;color:var(--ink-muted);margin-top:2px;">要復習</div></div><div style="flex:1;min-width:70px;background:var(--bg-white);border-radius:var(--radius);padding:16px;text-align:center;border:1px solid var(--divider);"><div style="font-family:Sora;font-size:1.4rem;font-weight:800;color:var(--action);">'+sc+'</div><div style="font-size:0.65rem;color:var(--ink-muted);margin-top:2px;">保存</div></div></div>';
+    html+='<div style="display:flex;gap:8px;padding:16px;flex-wrap:wrap;">';
+    ['all','mastered','retry','saved'].forEach(function(f){var l=f==='all'?'すべて':f==='mastered'?'聞き取れた':f==='retry'?'要復習':'保存';var ac=reviewFilter===f;html+='<button onclick="setReviewFilter(\''+f+'\')" style="padding:6px 16px;border-radius:50px;border:1.5px solid '+(ac?'var(--action)':'var(--divider)')+';background:'+(ac?'var(--action-light)':'transparent')+';font-family:inherit;font-size:0.78rem;font-weight:600;color:'+(ac?'var(--action)':'var(--ink-secondary)')+';cursor:pointer;">'+l+'</button>';});
+    html+='</div>';
+    if(rc>0){html+='<button class="cta-btn" style="margin:0 16px 16px;width:calc(100% - 32px);" onclick="startReviewLesson(\'retry\')"><svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:#fff"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>要復習フレーズを練習する（'+rc+'）</button>';}
+    html+='<div style="padding:0 16px 8px;font-size:0.82rem;font-weight:700;display:flex;align-items:center;gap:6px;"><span style="width:3px;height:14px;background:var(--grad-brand-soft);border-radius:2px;display:inline-block;"></span>学習履歴 <span style="font-size:0.65rem;background:var(--grad-brand-soft);color:#fff;padding:2px 8px;border-radius:50px;font-weight:600;">'+filtered.length+'</span></div>';
+    var statusLabels={mastered:'聞き取れた',retry:'要復習',saved:'保存'};
+    filtered.forEach(function(r){var t=teachers.find(function(x){return x.id===r.teacher;});var tn=t?t.name:'';var isMas=r.status==='mastered';var isSaved=r.status==='saved';var bg=isMas?'linear-gradient(135deg,#d1fae5,#a7f3d0)':isSaved?'linear-gradient(135deg,#dbeafe,#bfdbfe)':'linear-gradient(135deg,#fce7f3,#fbcfe8)';var fg=isMas?'#059669':isSaved?'#2563eb':'#c13584';var icon=isMas?'M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z':isSaved?'M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z':'M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z';var enc=JSON.stringify(r.enPlain);html+='<div onclick="openReviewDetail('+enc+')" style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--bg-white);border-bottom:1px solid var(--divider);cursor:pointer;"><div style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:'+bg+';flex-shrink:0;"><svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:'+fg+';"><path d="'+icon+'"/></svg></div><div style="flex:1;min-width:0;"><div style="font-size:0.9rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+r.enPlain+'</div><div style="font-size:0.75rem;color:var(--ink-muted);">'+r.ja+'</div><span class="review-status-badge '+r.status+'" onclick="event.stopPropagation();cycleReviewStatus('+enc+')" style="display:inline-block;margin-top:6px;">'+statusLabels[r.status]+'</span></div><button onclick="event.stopPropagation();startSingleLesson('+enc+')" style="width:40px;height:40px;border-radius:50%;background:var(--action);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;box-shadow:0 2px 8px rgba(0,149,246,0.35);" title="動画で学習"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#fff;margin-left:2px;"><path d="M8 5v14l11-7z"/></svg></button><div style="display:flex;align-items:center;gap:6px;flex-shrink:0;"><span style="font-size:0.7rem;color:var(--ink-muted);">'+tn+'</span><svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:var(--ink-muted);"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg></div></div>';});
+    el.innerHTML=html;
+}
+function setReviewFilter(f){reviewFilter=f;renderReview();}
+var currentReviewDetailEnPlain=null;
+function openReviewDetail(enPlain){
+    currentReviewDetailEnPlain=enPlain;
+    var p=phrases.find(function(x){return x.enPlain===enPlain;});
+    if(!p){closeReviewDetail();return;}
+    var html='<div class="explain-phrase-card"><div class="explain-phrase">'+p.enPlain+'</div><div class="explain-ja">'+p.ja+'</div></div>';
+    if(p.explain){html+='<div class="explain-section-title">解説</div><div class="explain-content">'+p.explain+'</div>';}
+    if(p.examples&&p.examples.length){html+='<div class="explain-section-title" style="margin-top:18px">例文</div>';p.examples.forEach(function(ex){html+='<div class="explain-example"><div class="ex-en">'+ex.en+'</div><div class="ex-ja">'+ex.ja+'</div></div>';});}
+    var r=reviewData.find(function(x){return x.enPlain===enPlain;});
+    var st=r?r.status:'retry';
+    var statusLabels={mastered:'聞き取れた',retry:'要復習',saved:'保存'};
+    html+='<div style="margin-top:16px;"><span style="font-size:0.72rem;color:var(--ink-muted);">ステータス</span><br><span class="review-status-badge '+st+'" onclick="cycleReviewStatusInDetail()" style="cursor:pointer;margin-top:6px;display:inline-block;">'+statusLabels[st]+'</span></div>';
+    document.getElementById('reviewDetailBody').innerHTML=html;
+    document.getElementById('reviewDetailStudyBtn').onclick=function(){closeReviewDetail();startSingleLesson(enPlain);};
+    document.getElementById('reviewDetailOverlay').classList.add('open');
+}
+function closeReviewDetail(){currentReviewDetailEnPlain=null;document.getElementById('reviewDetailOverlay').classList.remove('open');}
+function cycleReviewStatus(enPlain){
+    var r=reviewData.find(function(x){return x.enPlain===enPlain;});if(!r)return;
+    var next={retry:'mastered',mastered:'saved',saved:'retry'};
+    r.status=next[r.status]||'retry';
+    saveReviewData();
+    renderReview();
+}
+function cycleReviewStatusInDetail(){
+    if(!currentReviewDetailEnPlain)return;
+    var r=reviewData.find(function(x){return x.enPlain===currentReviewDetailEnPlain;});if(!r)return;
+    var next={retry:'mastered',mastered:'saved',saved:'retry'};
+    r.status=next[r.status]||'retry';
+    saveReviewData();
+    var statusLabels={mastered:'聞き取れた',retry:'要復習',saved:'保存'};
+    var badge=document.querySelector('.review-detail-body .review-status-badge');
+    if(badge){badge.className='review-status-badge '+r.status;badge.textContent=statusLabels[r.status];}
+    renderReview();
+}
+function startReviewLesson(type){
+    var items=reviewData.filter(function(r){return r.status===type;});if(!items.length)return;
+    var pr=items.map(function(r){return phrases.find(function(p){return p.enPlain===r.enPlain;});}).filter(function(p){return !!p;});if(!pr.length)return;
+    document.getElementById('muteIcon').style.display=isMuted?'block':'none';document.getElementById('unmuteIcon').style.display=isMuted?'none':'block';
+    currentIndex=0;cardJudge={};lessonPhrases=pr;createCards();showScreen('lessonScreen');document.getElementById('swipeHint').classList.remove('hidden');
+}
+
+function openProfile(id){
+    var t=teachers.find(function(x){return x.id===id;});if(!t)return;
+    document.getElementById('profileTitle').textContent=t.name;
+    var tp=phrases.filter(function(p){return p.teacher===id;});
+    var profileTag=(t.styleLabel&&t.levelLabel)?(t.styleLabel+'×'+t.levelLabel):t.level;
+    var html='<div class="profile-top"><div class="profile-avatar">'+avHtml(t)+'</div><div class="profile-name">'+t.name+'</div><div class="profile-handle">@'+t.name.toLowerCase()+'</div><div class="profile-level">'+profileTag+'</div><div class="profile-bio">'+t.bio+'</div><div class="profile-stats"><div class="profile-stat"><div class="profile-stat-value">'+t.posts+'</div><div class="profile-stat-label">投稿</div></div><div class="profile-stat"><div class="profile-stat-value">'+t.followers+'</div><div class="profile-stat-label">IGフォロワー</div></div></div><div class="profile-actions"><button class="profile-follow-btn '+(t.following?'is-following':'do-follow')+'" onclick="toggleFollow(\''+t.id+'\');openProfile(\''+t.id+'\')">'+(t.following?'フォロー中':'フォローする')+'</button><button class="profile-ig-btn" onclick="window.open(\'https://instagram.com/'+t.ig+'\',\'_blank\')"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" fill="currentColor"/></svg>Instagram</button></div></div><div class="profile-divider"></div><div class="profile-section-title">コンテンツ（'+tp.length+'）</div><div class="profile-grid">';
+    tp.forEach(function(p){var vt=p.video?'<video class="grid-video-thumb" src="'+p.video+'" muted preload="metadata"></video><div class="grid-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></div>':'';html+='<div class="profile-grid-item'+(p.video?' has-video':'')+'" onclick="startSingleLesson(\''+p.enPlain+'\')">'+vt+'<div class="grid-category">#'+p.category+'</div><div class="grid-text">'+p.enPlain+'</div></div>';});
+    html+='</div>';document.getElementById('profileContent').innerHTML=html;showScreen('profileScreen');
+}
+
+function startSingleLesson(text){var p=phrases.find(function(x){return x.enPlain===text;});if(!p)return;document.getElementById('muteIcon').style.display=isMuted?'block':'none';document.getElementById('unmuteIcon').style.display=isMuted?'none':'block';currentIndex=0;cardJudge={};lessonPhrases=[p];createCards();showScreen('lessonScreen');document.getElementById('swipeHint').classList.remove('hidden');}
+var ps=document.getElementById('phraseSelector');
+if(ps){
+    // Restore selected phrase count from localStorage
+    var opts=ps.querySelectorAll('.phrase-option');
+    opts.forEach(function(b){b.classList.remove('selected');if(parseInt(b.dataset.count,10)===dailyCount)b.classList.add('selected');});
+    ps.addEventListener('click',function(e){if(e.target.classList.contains('phrase-option')){opts.forEach(function(b){b.classList.remove('selected');});e.target.classList.add('selected');dailyCount=parseInt(e.target.dataset.count);saveDailyCount(dailyCount);var dc=document.getElementById('dailyCountBtn');if(dc)dc.textContent=dailyCount;}});
+}
+function startLesson(){
+    document.getElementById('muteIcon').style.display=isMuted?'block':'none';
+    document.getElementById('unmuteIcon').style.display=isMuted?'none':'block';
+    currentIndex=0;cardJudge={};
+    var followingTeachers=teachers.filter(function(t){return t.following;});
+    if(followingTeachers.length===0)followingTeachers=teachers.slice();
+    var available=[];
+    followingTeachers.forEach(function(t){
+        phrases.forEach(function(p){if(p.teacher===t.id)available.push(p);});
+    });
+    lessonPhrases=[];
+    if(available.length>0){
+        var idx=0;
+        while(lessonPhrases.length<dailyCount&&lessonPhrases.length<available.length){
+            var p=available[idx%available.length];
+            if(lessonPhrases.indexOf(p)===-1)lessonPhrases.push(p);
+            idx++;
+        }
+    }
+    if(lessonPhrases.length===0)lessonPhrases=phrases.slice(0,dailyCount);
+    createCards();showScreen('lessonScreen');document.getElementById('swipeHint').classList.remove('hidden');
+}
+function closeLesson(){
+    document.querySelectorAll('.card-video').forEach(function(v){v.pause();});
+    var s=document.getElementById('splashScreen');if(s)s.classList.add('hide');
+    showScreen('homeScreen');
+}
+
+function createCards(){
+    var w=document.getElementById('cardsWrapper'),lp=lessonPhrases;
+    w.innerHTML=lp.map(function(p,i){
+        var t=teachers.find(function(x){return x.id===p.teacher;});
+        var bg=p.video?'<div class="card-video-wrap"><div class="video-loading-spinner" id="videoSpinner'+i+'"></div><video class="card-video active" id="vid'+i+'a" src="'+p.video+'" playsinline preload="auto"></video><video class="card-video" id="vid'+i+'b" src="'+p.video+'" playsinline preload="auto"></video></div>':'<div class="card-fallback-bg"><div class="fallback-avatar">'+avHtml(t)+'</div></div>';
+        var cc=(commentsData[i]||[]).length;
+        var svCls=cardSaved[p.enPlain]?' saved':'';
+        var hasChoices=p.choices&&p.choices.length>=2&&typeof p.correctIndex==='number';
+        var showArea='';
+        if(hasChoices){
+            var choiceBtns=p.choices.map(function(c,ci){return '<button class="choice-btn" id="choiceBtn'+i+'_'+ci+'" onclick="event.stopPropagation();selectChoice('+i+','+ci+')">'+c+'</button>';}).join('');
+            showArea='<div class="card-choice-area hidden" id="choiceArea'+i+'"><div class="choice-question">何が聞こえましたか？</div><div class="choice-btns">'+choiceBtns+'</div><div class="choice-result" id="choiceResult'+i+'"></div></div><div class="card-text-area" id="answer'+i+'"><div class="card-english">'+p.en+'</div><div class="card-japanese">'+p.ja+'</div></div>';
+        }else{
+            showArea='<button class="card-show-btn" id="showBtn'+i+'" onclick="event.stopPropagation();showAnswer('+i+')"><svg class="show-icon" viewBox="0 0 24 24" fill="white"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>答えを見る</button><div class="card-text-area" id="answer'+i+'"><div class="card-english">'+p.en+'</div><div class="card-japanese">'+p.ja+'</div></div>';
+        }
+        var explainBtn=p.explain?'<button class="card-explain-btn" id="explainBtn'+i+'" onclick="event.stopPropagation();openExplain('+i+')"'+(hasChoices?' style="opacity:0;pointer-events:none"':'')+'><span class="explain-icon">📖</span>解説を見る</button>':'';
+        var commentLabel='コメント'+(cc>0?' '+cc:'');
+        return '<div class="card" data-index="'+i+'">'+bg+'<div class="card-overlay-top"></div><div class="card-overlay-bottom"></div><div class="card-pause-indicator" id="pauseInd'+i+'"><svg id="pauseIconPlay'+i+'" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg><svg id="pauseIconPause'+i+'" viewBox="0 0 24 24" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/></svg></div><div class="card-bottom"><div class="card-teacher-row"><div class="card-teacher-av">'+avHtml(t)+'</div><span class="card-teacher-name">'+t.name+'</span><span class="card-category">#'+p.category+'</span></div>'+showArea+explainBtn+'</div><div class="card-side"><div class="side-btn-wrap" id="doneWrap'+i+'" onclick="event.stopPropagation();markDone('+i+')"><button class="side-btn" id="doneBtn'+i+'" type="button" tabindex="-1"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="currentColor"/></svg></button><div class="side-label">できた</div></div><div class="side-btn-wrap" id="retryWrap'+i+'" onclick="event.stopPropagation();markRetry('+i+')"><button class="side-btn" id="retryBtn'+i+'" type="button" tabindex="-1"><svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" fill="currentColor"/></svg></button><div class="side-label">もう一度</div></div><div class="side-btn-wrap" onclick="event.stopPropagation();markSave('+i+')"><button class="side-btn'+svCls+'" id="saveBtn'+i+'" type="button" tabindex="-1"><svg viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z" fill="currentColor"/></svg></button><div class="side-label">保存</div></div><div class="side-btn-wrap" onclick="event.stopPropagation();openComments('+i+')"><button class="side-btn" type="button" tabindex="-1"><svg viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z" fill="currentColor"/></svg></button><div class="side-label">'+commentLabel+'</div></div></div></div>';
+    }).join('');
+    updateProgress();playCurrentVideo();setupVideoLoopListeners();
+}
+
+function getActiveVideo(i){var c=document.querySelector('.card[data-index="'+i+'"]');if(!c)return null;return c.querySelector('.card-video.active');}
+function playCurrentVideo(){lessonPhrases.forEach(function(p,i){if(!p.video)return;var va=document.getElementById('vid'+i+'a'),vb=document.getElementById('vid'+i+'b');if(!va||!vb)return;if(i===currentIndex){var v=getActiveVideo(i);if(v){v.muted=isMuted;v.play().catch(function(){});}setupVideoSpinner(i);}else{va.pause();vb.pause();}});var nextA=document.getElementById('vid'+(currentIndex+1)+'a');if(nextA&&nextA.readyState<2){nextA.preload='auto';nextA.load();}}
+function setupVideoSpinner(i){
+    var spinner=document.getElementById('videoSpinner'+i);if(!spinner)return;
+    var v=getActiveVideo(i);
+    if(v&&v.readyState>=3){spinner.style.display='none';return;}
+    spinner.style.display='block';
+    var va=document.getElementById('vid'+i+'a'),vb=document.getElementById('vid'+i+'b');
+    function hideSpinner(){spinner.style.display='none';}
+    if(va&&!va._spinnerAttached){va._spinnerAttached=true;va.addEventListener('canplay',hideSpinner);}
+    if(vb&&!vb._spinnerAttached){vb._spinnerAttached=true;vb.addEventListener('canplay',hideSpinner);}
+    setTimeout(hideSpinner,5000);
+}
+var lessonPhrases=[],cardJudge={},cardSaved={},videoLoopCount={};
+function setupSeamlessLoop(){
+    lessonPhrases.forEach(function(p,i){
+        if(!p.video)return;
+        var va=document.getElementById('vid'+i+'a'),vb=document.getElementById('vid'+i+'b');
+        if(!va||!vb)return;
+        ['a','b'].forEach(function(slot){
+            var v=document.getElementById('vid'+i+slot);
+            if(!v||v._seamlessAttached)return;
+            v._seamlessAttached=true;
+            v.addEventListener('timeupdate',function(){
+                if(!this.classList.contains('active'))return;
+                var idx=parseInt(this.id.replace(/\D/g,''),10);
+                var d=this.duration,ct=this.currentTime;
+                if(!isFinite(d)||d<=0||ct<d-0.35)return;
+                var other=this.id.endsWith('a')?document.getElementById('vid'+idx+'b'):document.getElementById('vid'+idx+'a');
+                if(!other)return;
+                this.pause();this.classList.remove('active');
+                other.currentTime=0;other.muted=isMuted;other.classList.add('active');
+                if(idx===currentIndex)other.play().catch(function(){});
+                videoLoopCount[idx]=(videoLoopCount[idx]||0)+1;
+                var area=document.getElementById('choiceArea'+idx);
+                if(area&&area.classList.contains('hidden')&&(videoLoopCount[idx]||0)>=2)area.classList.remove('hidden');
+            });
+        });
+    });
+}
+function setupVideoLoopListeners(){
+    lessonPhrases.forEach(function(p,i){
+        var hasChoices=p.choices&&p.choices.length>=2&&typeof p.correctIndex==='number';
+        if(!hasChoices)return;
+        var area=document.getElementById('choiceArea'+i);if(!area||!area.classList.contains('hidden'))return;
+        if(p.video){videoLoopCount[i]=0;}else{setTimeout(function(){var a=document.getElementById('choiceArea'+i);if(a)a.classList.remove('hidden');},6000);}
+    });
+    setupSeamlessLoop();
+}
+
+function spawnConfetti(btn){
+    var rect=btn.getBoundingClientRect();var card=btn.closest('.card');var cardRect=card.getBoundingClientRect();
+    var container=document.createElement('div');container.className='confetti-container';card.appendChild(container);
+    var colors=['#ed4956','#e1306c','#c13584','#833ab4','#0095f6'];
+    for(var i=0;i<14;i++){var c=document.createElement('div');c.className='confetti';
+        c.style.left=(rect.left-cardRect.left+rect.width/2)+'px';c.style.top=(rect.top-cardRect.top+rect.height/2)+'px';
+        c.style.background=colors[Math.floor(Math.random()*colors.length)];
+        var angle=(Math.random()-0.5)*140;var dist=35+Math.random()*55;
+        c.style.setProperty('--tx',Math.sin(angle*Math.PI/180)*dist+'px');c.style.setProperty('--ty',(-25-Math.random()*70)+'px');
+        c.style.animation='confettiBurst '+(0.5+Math.random()*0.4)+'s ease-out forwards';
+        container.appendChild(c);}
+    setTimeout(function(){container.remove();},1100);
+}
+
+function markDone(i){var p=lessonPhrases[i];if(!p)return;cardJudge[i]='done';var btn=document.getElementById('doneBtn'+i);if(btn){btn.classList.add('done');}spawnConfetti(btn||document.getElementById('doneWrap'+i));}
+function markRetry(i){var p=lessonPhrases[i];if(!p)return;cardJudge[i]='retry';var r=document.getElementById('retryBtn'+i);if(r){r.classList.add('retry');}var d=document.getElementById('doneBtn'+i);if(d){d.classList.remove('done');}lessonPhrases.push(JSON.parse(JSON.stringify(p)));rebuildCards();updateProgress();}
+function markSave(i){var p=lessonPhrases[i];if(!p)return;cardSaved[p.enPlain]=true;var btn=document.getElementById('saveBtn'+i);if(btn){btn.classList.add('saved');}var existing=reviewData.find(function(r){return r.enPlain===p.enPlain;});if(!existing){reviewData.push({enPlain:p.enPlain,ja:p.ja,teacher:p.teacher,status:'saved',date:new Date().toLocaleDateString('ja-JP')});}else if(existing.status!=='saved'){existing.status='saved';}saveReviewData();renderReview();}
+function rebuildCards(){
+    var w=document.getElementById('cardsWrapper'),idx=lessonPhrases.length-1,p=lessonPhrases[idx],t=teachers.find(function(x){return x.id===p.teacher;});
+    var bg=p.video?'<div class="card-video-wrap"><div class="video-loading-spinner" id="videoSpinner'+idx+'"></div><video class="card-video active" id="vid'+idx+'a" src="'+p.video+'" playsinline preload="auto"></video><video class="card-video" id="vid'+idx+'b" src="'+p.video+'" playsinline preload="auto"></video></div>':'<div class="card-fallback-bg"><div class="fallback-avatar">'+avHtml(t)+'</div></div>';
+    var cc=(commentsData[idx]||[]).length;var svCls=cardSaved[p.enPlain]?' saved':'';
+    var hasChoices=p.choices&&p.choices.length>=2&&typeof p.correctIndex==='number';
+    var showArea='';
+    if(hasChoices){
+        var choiceBtns=p.choices.map(function(c,ci){return '<button class="choice-btn" id="choiceBtn'+idx+'_'+ci+'" onclick="event.stopPropagation();selectChoice('+idx+','+ci+')">'+c+'</button>';}).join('');
+        showArea='<div class="card-choice-area hidden" id="choiceArea'+idx+'"><div class="choice-question">何が聞こえましたか？</div><div class="choice-btns">'+choiceBtns+'</div><div class="choice-result" id="choiceResult'+idx+'"></div></div><div class="card-text-area" id="answer'+idx+'"><div class="card-english">'+p.en+'</div><div class="card-japanese">'+p.ja+'</div></div>';
+    }else{
+        showArea='<button class="card-show-btn" id="showBtn'+idx+'" onclick="event.stopPropagation();showAnswer('+idx+')">答えを見る</button><div class="card-text-area" id="answer'+idx+'"><div class="card-english">'+p.en+'</div><div class="card-japanese">'+p.ja+'</div></div>';
+    }
+    var explainBtn=p.explain?'<button class="card-explain-btn" id="explainBtn'+idx+'" onclick="event.stopPropagation();openExplain('+idx+')"'+(hasChoices?' style="opacity:0;pointer-events:none"':'')+'><span class="explain-icon">📖</span>解説を見る</button>':'';
+    var commentLabel='コメント'+(cc>0?' '+cc:'');
+    var html='<div class="card" data-index="'+idx+'">'+bg+'<div class="card-overlay-top"></div><div class="card-overlay-bottom"></div><div class="card-pause-indicator" id="pauseInd'+idx+'"><svg id="pauseIconPlay'+idx+'" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg><svg id="pauseIconPause'+idx+'" viewBox="0 0 24 24" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/></svg></div><div class="card-bottom"><div class="card-teacher-row"><div class="card-teacher-av">'+avHtml(t)+'</div><span class="card-teacher-name">'+t.name+'</span><span class="card-category">#'+p.category+'</span></div>'+showArea+explainBtn+'</div><div class="card-side"><div class="side-btn-wrap" id="doneWrap'+idx+'" onclick="event.stopPropagation();markDone('+idx+')"><button class="side-btn" id="doneBtn'+idx+'" type="button" tabindex="-1"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="currentColor"/></svg></button><div class="side-label">できた</div></div><div class="side-btn-wrap" id="retryWrap'+idx+'" onclick="event.stopPropagation();markRetry('+idx+')"><button class="side-btn" id="retryBtn'+idx+'" type="button" tabindex="-1"><svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" fill="currentColor"/></svg></button><div class="side-label">もう一度</div></div><div class="side-btn-wrap" onclick="event.stopPropagation();markSave('+idx+')"><button class="side-btn'+svCls+'" id="saveBtn'+idx+'" type="button" tabindex="-1"><svg viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z" fill="currentColor"/></svg></button><div class="side-label">保存</div></div><div class="side-btn-wrap" onclick="event.stopPropagation();openComments('+idx+')"><button class="side-btn" type="button" tabindex="-1"><svg viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z" fill="currentColor"/></svg></button><div class="side-label">'+commentLabel+'</div></div></div></div>';
+    w.insertAdjacentHTML('beforeend',html);
+    setupVideoLoopListeners();
+}
+
+function showLessonComplete(){
+    setTodayDone();
+    updateStreak();
+    lessonPhrases.forEach(function(p){checkedTeachers[p.teacher]=true;});
+    // Save to review data
+    lessonPhrases.forEach(function(p,i){
+        var status=cardJudge[i]==='done'?'mastered':'retry';
+        var existing=reviewData.find(function(r){return r.enPlain===p.enPlain;});
+        if(existing){existing.status=status;existing.date=new Date().toLocaleDateString('ja-JP');}
+        else{reviewData.push({enPlain:p.enPlain,ja:p.ja,teacher:p.teacher,status:status,date:new Date().toLocaleDateString('ja-JP')});}
+    });
+    saveReviewData();
+    var dc=0,rc=0;Object.keys(cardJudge).forEach(function(k){if(cardJudge[k]==='done')dc++;if(cardJudge[k]==='retry')rc++;});
+    var w=document.getElementById('cardsWrapper');
+    w.innerHTML+='<div class="card"><div class="complete-card"><div class="complete-inner"><div class="complete-emoji">&#127881;</div><div class="complete-title">Complete!</div><div class="complete-sub">今日のレッスンを終了しました</div><div class="complete-stats"><div class="complete-stat"><div class="complete-stat-value good">'+dc+'</div><div class="complete-stat-label">できた</div></div><div class="complete-stat"><div class="complete-stat-value retry">'+rc+'</div><div class="complete-stat-label">もう一度</div></div></div><button class="complete-btn" onclick="closeLesson()">ホームに戻る</button></div></div></div>';
+    isAnimating=true;currentIndex++;updatePosition();document.getElementById('lessonProgressText').textContent='Complete!';
+    setTimeout(function(){isAnimating=false;},600);
+}
+
+function openComments(i){currentCommentIndex=i;renderComments();document.getElementById('commentsOverlay').classList.add('open');}
+function closeComments(){document.getElementById('commentsOverlay').classList.remove('open');}
+function renderComments(){var l=document.getElementById('commentsList'),c=commentsData[currentCommentIndex]||[];if(!c.length){l.innerHTML='<div class="no-comments">まだコメントはありません。<br>最初のコメントを書いてみよう!</div>';return;}l.innerHTML=c.map(function(x){var cls=x.isAI?'comment-item ai-reply':'comment-item';var nh=x.isAI?x.name+' <span class="ai-badge">AI</span>':x.name;return '<div class="'+cls+'"><div class="comment-av">'+x.avatar+'</div><div class="comment-body"><div class="comment-name">'+nh+'</div><div class="comment-text">'+x.text+'</div><div class="comment-time">'+x.time+'</div></div></div>';}).join('');l.scrollTop=l.scrollHeight;}
+function postComment(){var inp=document.getElementById('commentInput'),t=inp.value.trim();if(!t)return;if(!commentsData[currentCommentIndex])commentsData[currentCommentIndex]=[];commentsData[currentCommentIndex].push({name:'あなた',avatar:'You',text:t,time:'たった今'});inp.value='';renderComments();var l=document.getElementById('commentsList');var ty=document.createElement('div');ty.className='comment-item ai-reply';ty.id='aiTyping';ty.innerHTML='<div class="comment-av">AI</div><div class="comment-body"><div class="comment-name">Swallow AI <span class="ai-badge">AI</span></div><div class="ai-typing"><span></span><span></span><span></span></div></div>';l.appendChild(ty);l.scrollTop=l.scrollHeight;setTimeout(function(){var el=document.getElementById('aiTyping');if(el)el.remove();var reply=generateAIReply(currentCommentIndex,t);commentsData[currentCommentIndex].push({name:'Swallow AI',avatar:'AI',text:reply,time:'たった今',isAI:true});renderComments();},1500);}
+function generateAIReply(pi,ut){var p=lessonPhrases[pi]||phrases[pi];if(!p)return'ありがとうございます！';var kw=p.enPlain;var rp=['いい質問ですね！「'+kw+'」はネイティブが日常的に使うフレーズです。実際の会話で積極的に使ってみてください。','コメントありがとうございます！解説を読むとさらに理解が深まりますよ。声に出して練習してみてください。','なるほど！「'+kw+'」について補足すると、カジュアルな場面で特に使われます。フォーマルな場面では元の形を使うと安心です。'];if(ut.indexOf('難し')!==-1||ut.indexOf('むずかし')!==-1)return'最初は難しく感じますよね。でも「'+kw+'」はネイティブが毎日使うフレーズなので、繰り返し聞いているうちに必ず慣れます！';if(ut.indexOf('発音')!==-1)return'発音に注目しているのは素晴らしいです！リンキングがポイントです。動画を0.75xで再生して口の動きを観察してみてください。';return rp[Math.floor(Math.random()*rp.length)];}
+
+function updateProgress(){document.getElementById('lessonProgressText').textContent=(currentIndex+1)+' / '+lessonPhrases.length;}
+function showAnswer(i){
+    var btn=document.getElementById('showBtn'+i);
+    if(btn){
+        btn.style.transition='all 0.3s var(--out-expo)';
+        btn.style.opacity='0';btn.style.transform='translateY(-8px) scale(0.95)';
+        setTimeout(function(){btn.classList.add('hidden');},300);
+    }
+    document.getElementById('answer'+i).classList.add('visible');
+    var eb=document.getElementById('explainBtn'+i);if(eb){setTimeout(function(){eb.classList.add('visible');},250);}
+}
+function selectChoice(i,choiceIdx){
+    var p=lessonPhrases[i];if(!p||!p.choices)return;
+    var correct=p.correctIndex;
+    var btns=p.choices.map(function(_,ci){return document.getElementById('choiceBtn'+i+'_'+ci);});
+    var resultEl=document.getElementById('choiceResult'+i);
+    btns.forEach(function(b){if(b){b.classList.add('disabled');b.style.pointerEvents='none';}});
+    var isCorrect=choiceIdx===correct;
+    btns[choiceIdx].classList.add(isCorrect?'correct':'wrong');
+    if(!isCorrect&&btns[correct])btns[correct].classList.add('correct');
+    resultEl.textContent=isCorrect?'正解！':'不正解';
+    resultEl.className='choice-result '+(isCorrect?'correct':'wrong');
+    resultEl.style.display='block';
+    setTimeout(function(){
+        document.getElementById('answer'+i).classList.add('visible');
+        var eb=document.getElementById('explainBtn'+i);if(eb){eb.style.opacity='1';eb.style.pointerEvents='auto';eb.classList.add('visible');}
+    },800);
+}
+function openExplain(idx){var p=lessonPhrases[idx]||phrases[idx];if(!p||!p.explain)return;var html='<div class="explain-phrase-card"><div class="explain-phrase">'+p.enPlain+'</div><div class="explain-ja">'+p.ja+'</div></div><div class="explain-section-title">解説</div><div class="explain-content">'+p.explain+'</div>';if(p.examples&&p.examples.length){html+='<div class="explain-section-title" style="margin-top:18px">例文</div>';p.examples.forEach(function(ex){html+='<div class="explain-example"><div class="ex-en">'+ex.en+'</div><div class="ex-ja">'+ex.ja+'</div></div>';});}document.getElementById('explainBody').innerHTML=html;document.getElementById('explainOverlay').classList.add('open');}
+function closeExplain(){document.getElementById('explainOverlay').classList.remove('open');}
+function updatePosition(){document.getElementById('cardsWrapper').style.transform='translate3d(0,'+(-currentIndex*100)+'%,0)';}
+
+function goNext(){if(isAnimating)return;if(!cardJudge[currentIndex])return;if(currentIndex>=lessonPhrases.length-1){showLessonComplete();return;}isAnimating=true;currentIndex++;updatePosition();updateProgress();playCurrentVideo();document.getElementById('swipeHint').classList.add('hidden');setTimeout(function(){isAnimating=false;},550);}
+function goPrev(){if(isAnimating||currentIndex<=0)return;isAnimating=true;currentIndex--;updatePosition();updateProgress();playCurrentVideo();setTimeout(function(){isAnimating=false;},550);}
+
+function handleCardTap(e){if(e.target.closest('.card-bottom')||e.target.closest('.card-side')||e.target.closest('button'))return;var v=getActiveVideo(currentIndex);if(!v)return;var ind=document.getElementById('pauseInd'+currentIndex);var pl=document.getElementById('pauseIconPlay'+currentIndex);var pa=document.getElementById('pauseIconPause'+currentIndex);if(v.paused){v.play();if(pl)pl.style.display='none';if(pa)pa.style.display='block';}else{v.pause();if(pl)pl.style.display='block';if(pa)pa.style.display='none';}if(ind){ind.classList.add('show');clearTimeout(ind._ht);ind._ht=setTimeout(function(){ind.classList.remove('show');},500);}}
+
+var swipe=document.getElementById('swipeContainer'),lessonScr=document.getElementById('lessonScreen'),startY=0,startX=0,moved=false,tapStart=0;
+function onWheel(e){if(!lessonScr||!lessonScr.classList.contains('active'))return;e.preventDefault();if(isAnimating||onWheel._t)return;onWheel._t=setTimeout(function(){onWheel._t=null;},550);if(e.deltaY>0)goNext();else if(e.deltaY<0)goPrev();}
+if(swipe){swipe.addEventListener('touchstart',function(e){if(isAnimating)return;startY=e.touches[0].clientY;startX=e.touches[0].clientX;moved=false;tapStart=Date.now();},{passive:true});
+swipe.addEventListener('touchmove',function(e){if(isAnimating)return;if(Math.abs(e.touches[0].clientY-startY)>8||Math.abs(e.touches[0].clientX-startX)>8)moved=true;},{passive:true});
+swipe.addEventListener('touchend',function(e){if(isAnimating)return;if(!moved&&Date.now()-tapStart<250){handleCardTap(e);return;}if(!moved)return;var d=e.changedTouches[0].clientY-startY;if(d<-50)goNext();else if(d>50)goPrev();});
+swipe.addEventListener('wheel',onWheel,{passive:false});
+if(lessonScr)lessonScr.addEventListener('wheel',onWheel,{passive:false});
+swipe.addEventListener('click',function(e){if(moved)return;handleCardTap(e);});}
+document.addEventListener('keydown',function(e){if(!document.getElementById('lessonScreen').classList.contains('active'))return;if(e.key==='ArrowDown'||e.key===' '){e.preventDefault();goNext();}else if(e.key==='ArrowUp'){e.preventDefault();goPrev();}});
+
+var style=document.createElement('style');
+style.textContent='@keyframes confettiBurst{0%{opacity:1;transform:translate(0,0) rotate(0deg) scale(1)}100%{opacity:0;transform:translate(var(--tx),var(--ty)) rotate(360deg) scale(0.15)}}';
+document.head.appendChild(style);
+
+function confirmResetData(){
+    if(!confirm('学習データをすべてリセットしますか？\nストリーク、学習履歴、フォロー状態がすべて初期化されます。'))return;
+    try{
+        localStorage.removeItem(REVIEW_DATA_KEY);
+        localStorage.removeItem(STREAK_KEY);
+        localStorage.removeItem(MUTE_KEY);
+        localStorage.removeItem(DAILY_COUNT_KEY);
+        localStorage.removeItem(FOLLOWING_KEY);
+        localStorage.removeItem(HIDDEN_KEY);
+        localStorage.removeItem(HEARING_KEY);
+        // Remove daily done keys
+        for(var k in localStorage){if(k.indexOf('swallow_daily_')===0)localStorage.removeItem(k);}
+    }catch(e){}
+    reviewData=[];hiddenTeachers={};dailyCount=1;isMuted=true;
+    teachers.forEach(function(t){t.following=(t.id==='masa');});
+    saveMuteState(isMuted);saveDailyCount(dailyCount);saveFollowingState();saveHiddenTeachers();
+    // Reset phrase selector UI
+    var opts=document.querySelectorAll('.phrase-option');
+    opts.forEach(function(b){b.classList.remove('selected');if(parseInt(b.dataset.count,10)===1)b.classList.add('selected');});
+    updateUI();
+    alert('学習データをリセットしました。');
+}
+
+loadReviewData();
+initHearing();
+renderAllNavs('homeScreen');updateUI();
+setTimeout(function(){
+    document.getElementById('splashScreen').classList.add('splash-flyaway');
+    setTimeout(function(){
+        document.getElementById('splashScreen').classList.add('hide');
+        if(!localStorage.getItem(HEARING_KEY)){
+            showScreen('hearingScreen');
+        }else{
+            showScreen('homeScreen');
+        }
+    },600);
+},1600);
+</script>
+</body>
+</html>

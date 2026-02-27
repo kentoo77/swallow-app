@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Swallow アプリ化 — 手順一覧</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --primary: #833ab4;
+      --primary-dark: #6b2d94;
+      --gradient: linear-gradient(135deg, #833ab4 0%, #c13584 50%, #e1306c 100%);
+      --text: #1e293b;
+      --text-light: #64748b;
+      --bg: #fafafa;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --code-bg: #f1f5f9;
+    }
+    body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); line-height: 1.8; font-size: 15px; }
+    header {
+      background: linear-gradient(135deg, #1a0a1f 0%, #2d1b4e 35%, #1a0a2a 70%, #0d0515 100%);
+      color: white;
+      padding: 3rem 1.5rem;
+      text-align: center;
+    }
+    header .badge { display: inline-block; background: var(--gradient); color: white; padding: 0.375rem 1rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; margin-bottom: 1rem; }
+    header h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; }
+    header p { color: rgba(255,255,255,0.8); font-size: 0.9rem; }
+    nav {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      overflow-x: auto;
+    }
+    nav ul { display: flex; list-style: none; max-width: 900px; margin: 0 auto; padding: 0 1rem; flex-wrap: wrap; }
+    nav li a {
+      display: block;
+      padding: 1rem 0.75rem;
+      color: var(--text-light);
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 500;
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    nav li a:hover { color: var(--primary); border-bottom-color: var(--primary); }
+    main { max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+    section { margin-bottom: 3rem; scroll-margin-top: 80px; }
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 3px solid var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    h2 .step-num {
+      background: var(--primary);
+      color: white;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+    }
+    h3 { font-size: 1rem; font-weight: 700; color: #2c5282; margin: 1.5rem 0 0.75rem; }
+    p { margin-bottom: 1rem; }
+    .card {
+      background: var(--card);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .flow-container { display: flex; flex-direction: column; gap: 0.5rem; }
+    .flow-step {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.875rem 1rem;
+      background: var(--card);
+      border-radius: 0.5rem;
+      border-left: 4px solid var(--primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .flow-step .num {
+      background: var(--primary);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+    th, td { padding: 0.75rem 1rem; text-align: left; border: 1px solid var(--border); }
+    th { background: #f1f5f9; font-weight: 600; }
+    code { background: var(--code-bg); padding: 0.125rem 0.375rem; border-radius: 4px; font-size: 0.85em; }
+    .code-block {
+      background: var(--code-bg);
+      border-radius: 0.5rem;
+      padding: 1rem 1.25rem;
+      font-family: 'SF Mono', Consolas, monospace;
+      font-size: 0.8rem;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      line-height: 1.6;
+      margin: 1rem 0;
+    }
+    .link-box {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 0.5rem;
+      padding: 0.75rem 1rem;
+      margin: 0.75rem 0;
+      word-break: break-all;
+    }
+    .link-box .label { font-size: 0.75rem; color: var(--text-light); margin-bottom: 0.25rem; }
+    .link-box a { color: #2563eb; text-decoration: none; }
+    .link-box a:hover { text-decoration: underline; }
+    .folder-structure {
+      background: #1e293b;
+      color: #e2e8f0;
+      border-radius: 0.5rem;
+      padding: 1.25rem 1.5rem;
+      font-family: 'SF Mono', Consolas, monospace;
+      font-size: 0.85rem;
+      line-height: 1.8;
+    }
+    .folder-structure .folder { color: #fbbf24; }
+    .folder-structure .file { color: #94a3b8; }
+    .alert {
+      padding: 1rem 1.25rem;
+      border-radius: 0.5rem;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+    .alert-info { background: #f8f6fc; border-left: 4px solid var(--primary); color: #4c1d95; }
+    .alert-warning { background: #fef2f2; border-left: 4px solid #dc2626; color: #991b1b; }
+    .alert-title { font-weight: 700; margin-bottom: 0.25rem; }
+    ul { margin: 0 0 1rem; padding-left: 1.5em; }
+    li { margin-bottom: 0.5rem; }
+    .toc { background: var(--card); border-radius: 0.5rem; padding: 1rem 1.25rem; margin-bottom: 2rem; }
+    .toc ul { list-style: none; padding-left: 0; }
+    .toc li { margin-bottom: 0.5rem; }
+    .toc a { color: var(--primary); text-decoration: none; font-weight: 500; }
+    .toc a:hover { text-decoration: underline; }
+    .badge-masa, .badge-ooide { font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; margin-left: 0.5rem; }
+    .badge-masa { background: #dbeafe; color: #1d4ed8; }
+    .badge-ooide { background: #fce7f3; color: #be185d; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="badge">Swallow アプリ化</div>
+  <h1>手順一覧</h1>
+  <p>準備フェーズ → Capacitor セットアップ → iOS リリース</p>
+</header>
+
+<nav>
+  <ul>
+    <li><a href="#overview">アプリ概要</a></li>
+    <li><a href="#flow">全体フロー</a></li>
+    <li><a href="#links">リンク一覧</a></li>
+    <li><a href="#structure">ファイル構成</a></li>
+    <li><a href="#phase1">準備（1〜3）</a></li>
+    <li><a href="#phase2">Capacitor（4〜9）</a></li>
+    <li><a href="#phase3">iOS（10〜16）</a></li>
+    <li><a href="#notes">補足・注意事項</a></li>
+  </ul>
+</nav>
+
+<main>
+
+  <section id="overview">
+    <h2>アプリ概要</h2>
+    <div class="card">
+      <p><strong>Swallow</strong> は、MasaEnglish が提供する<strong>英語会話学習用のモバイルアプリ</strong>です。</p>
+      <p>Instagram 風の UI で、旅行・日常シーンの英会話を「カテゴリ → トピック → エピソード」の階層で学べます。スワイプで次々と会話カードを進める形式で、リスニング・シャドーイング・穴埋めクイズなどに対応しています。</p>
+    </div>
+
+    <h3>主な機能</h3>
+    <ul>
+      <li><strong>ホーム</strong>：ストリーク（連続学習日数）、今日のミッション、おすすめの先生</li>
+      <li><strong>フォロー</strong>：フォロー中の先生（トピック）一覧、未学習バッジ</li>
+      <li><strong>レッスン</strong>：会話カードのスワイプ、音声再生、穴埋めクイズ、文法解説</li>
+      <li><strong>プロフィール</strong>：学習履歴、設定（フレーズ表示など）</li>
+    </ul>
+
+    <h3>データソース</h3>
+    <div class="card">
+      <p><strong>重要：</strong> 会話データ（<code>teachers</code> 配列・<code>phrases</code> 配列）は <code>index.html</code> 内にハードコードされています。外部の <code>data.js</code> は参照していません。データの追加・編集は <code>index.html</code> 内の該当箇所を直接修正してください。</p>
+    </div>
+
+    <h3>技術スタック</h3>
+    <ul>
+      <li><strong>Web アプリ</strong>：HTML / CSS / JavaScript（単一ファイル）</li>
+      <li><strong>ネイティブ化</strong>：Capacitor（Ionic 製）</li>
+      <li><strong>配信</strong>：iOS App Store（予定）</li>
+    </ul>
+  </section>
+
+  <section id="flow">
+    <h2>全体フロー</h2>
+    <div class="flow-container">
+      <div class="flow-step"><span class="num">1〜3</span>準備フェーズ（開発者登録・ツールインストール）</div>
+      <div class="flow-step"><span class="num">4〜9</span>Capacitor セットアップ</div>
+      <div class="flow-step"><span class="num">10〜16</span>iOS リリース（Xcode・署名・アップロード・審査）</div>
+    </div>
+    <div class="card" style="margin-top: 1rem;">
+      <p><strong>担当割り当て（パターンA）</strong></p>
+      <ul>
+        <li><span class="badge-masa">Masa</span> 4〜9.5（Capacitor セットアップ・www 配置・反復ワークフロー）／コンテンツ・HTML・phone-frame・フォント・セーフエリア</li>
+        <li><span class="badge-ooide">大井手</span> 1〜3（開発者登録・ツール導入）／10〜16（Xcode の GUI 操作・署名・アップロード・申請）</li>
+      </ul>
+      <p style="font-size: 0.8rem; color: var(--text-light); margin-top: 0.5rem;">アプリアイコン画像は Masa が準備 → 大井手が Xcode に設定。</p>
+    </div>
+  </section>
+
+  <section id="links">
+    <h2>リンク一覧</h2>
+    <div class="card">
+      <table>
+        <tr>
+          <th>用途</th>
+          <th>URL / パス</th>
+        </tr>
+        <tr>
+          <td>依頼ページ（Vercel 本番）</td>
+          <td><a href="https://swallow-up.vercel.app" target="_blank">https://swallow-up.vercel.app</a></td>
+        </tr>
+        <tr>
+          <td>河野さんへの依頼（直接）</td>
+          <td><a href="河野さんへの依頼.html">河野さんへの依頼.html</a></td>
+        </tr>
+        <tr>
+          <td>マニュアル（本ファイル）</td>
+          <td><a href="manual.html">manual.html</a></td>
+        </tr>
+        <tr>
+          <td>手順書（1〜23）</td>
+          <td><a href="docs/index.html">docs/index.html</a></td>
+        </tr>
+        <tr>
+          <td>Web アプリ（ローカル）</td>
+          <td><code>教材/swallow/index.html</code></td>
+        </tr>
+        <tr>
+          <td>会話データ</td>
+          <td><code>index.html</code> 内（teachers・phrases 配列）</td>
+        </tr>
+        <tr>
+          <td>Capacitor プロジェクト</td>
+          <td><code>教材/swallow/</code></td>
+        </tr>
+        <tr>
+          <td>App ID</td>
+          <td><code>com.masaenglishcompany.swallow</code></td>
+        </tr>
+      </table>
+    </div>
+  </section>
+
+  <section id="structure">
+    <h2>ファイル構成</h2>
+    <div class="code-block">教材/
+├── <span class="folder">swallow/</span>              ← 一元管理（Web アプリ + Capacitor プロジェクト）
+│   ├── index.html                ← メインの Swallow アプリ
+│   ├── 河野さんへの依頼.html
+│   ├── manual.html                ← 本マニュアル
+│   ├── <span class="folder">docs/</span>
+│   │   └── index.html             ← 手順書（1〜23）
+│   ├── vercel.json                ← Vercel デプロイ設定
+│   ├── capacitor.config.json      ← Capacitor 設定（要確認）
+│   ├── package.json               ← 依存関係（Capacitor 等）
+│   ├── *.MOV, masa_avatar.png    ← 動画・画像（www/ にもコピー必須）
+│   ├── <span class="folder">www/</span>               ← Web アプリの配置先
+│   │   ├── index.html
+│   │   ├── *.MOV, *.png          ← 上記をコピー
+│   │   └── ...
+│   └── <span class="folder">ios/</span>               ← Xcode プロジェクト（npx cap add ios で生成）
+│
+└── データは index.html 内（teachers・phrases 配列）にハードコード</div>
+  </section>
+
+  <section id="phase1">
+    <h2><span class="step-num">1</span>準備フェーズ</h2>
+
+    <h3>1. Apple Developer Program に登録 <span class="badge-ooide">大井手</span></h3>
+    <div class="card">
+      <p><a href="https://developer.apple.com/programs/" target="_blank">https://developer.apple.com/programs/</a></p>
+      <ul>
+        <li>年額 $99</li>
+        <li>審査に数日かかる場合あり。先にやっておくと後が楽</li>
+      </ul>
+    </div>
+
+    <h3>2. Google Play 開発者アカウントに登録（Android を出す場合） <span class="badge-ooide">大井手</span></h3>
+    <div class="card">
+      <p><a href="https://play.google.com/console/signup" target="_blank">https://play.google.com/console/signup</a></p>
+      <ul>
+        <li>初回 $25（一度きり）</li>
+        <li>本人確認が必要</li>
+      </ul>
+    </div>
+
+    <h3>3. 必要なツールをインストール <span class="badge-ooide">大井手</span></h3>
+    <div class="card">
+      <ul>
+        <li><strong>Node.js</strong>（v18 以上推奨）：<a href="https://nodejs.org" target="_blank">https://nodejs.org</a></li>
+        <li><strong>Xcode</strong>（15 以上推奨）：Mac App Store</li>
+        <li><strong>Android Studio</strong>（Android を出す場合）：<a href="https://developer.android.com/studio" target="_blank">https://developer.android.com/studio</a></li>
+      </ul>
+      <p><strong>バージョン要件：</strong> Capacitor v5 以上、Node.js v18+、Xcode 15+ を推奨。環境差分でハマる場合があるため、可能なら揃えてください。</p>
+    </div>
+  </section>
+
+  <section id="phase2">
+    <h2><span class="step-num">2</span>Capacitor セットアップ</h2>
+
+    <h3>4. Capacitor プロジェクトを初期化 <span class="badge-masa">Masa</span></h3>
+    <div class="card">
+      <div class="code-block">cd 教材/swallow
+npm init -y
+npm install @capacitor/core @capacitor/cli @capacitor/ios @capacitor/android
+npx cap init Swallow com.masaenglishcompany.swallow</div>
+    </div>
+
+    <h3>5. Web アプリを www に配置（動画・画像も必須） <span class="badge-masa">Masa</span></h3>
+    <div class="card">
+      <p><strong>致命的：</strong> <code>cp index.html www/</code> だけだとレッスン画面が真っ黒になります。アプリは <code>masa1.MOV</code>, <code>masa2.MOV</code>, <code>miki1.MOV</code>, <code>masaki1.MOV</code> など 8 本の動画と <code>masa_avatar.png</code> を参照しています。これらを <code>www/</code> にコピーしてください。</p>
+      <div class="code-block">mkdir -p www
+cp index.html www/
+cp *.MOV www/ 2>/dev/null || true
+cp masa_avatar.png www/ 2>/dev/null || true
+# または：cp 教材/swallow/*.MOV www/ など、実際の配置に合わせて</div>
+      <p>コピー後、<code>www/</code> 内で <code>index.html</code> と動画・画像が同じ階層にあるか確認。相対パス（<code>masa1.MOV</code> など）で正しく参照できること。</p>
+      <p><strong>ファイルサイズ注意：</strong> .MOV は非圧縮に近く、1 本あたり数十〜数百 MB になることがあります。8 本をそのままバンドルすると App Store の OTA ダウンロード制限（200MB 以上は Wi-Fi 必須）に引っかかる可能性があります。MP4（H.264）への変換を検討してください。</p>
+    </div>
+
+    <h3>5.5. アプリ化前の index.html 調整（必須） <span class="badge-masa">Masa</span></h3>
+    <div class="card">
+      <p><strong>致命的：</strong> <code>index.html</code> の <code>@media (min-width: 600px)</code> にある <code>.phone-frame</code>（390×844px の枠、擬似ノッチ）はブラウザデモ用です。Capacitor の WebView では実機画面全体を使うため、iPad や横画面で「端末の中に端末の枠」が表示される異様な見た目になります。</p>
+      <p><strong>対応：</strong> アプリ化前に <code>.phone-frame</code> のスタイル分岐を削除するか、実機表示用に調整してください。例：<code>@media (min-width: 600px)</code> 内の phone-frame 関連を削除、または <code>max-width: 100%</code> などで実機では全画面表示にする。</p>
+    </div>
+
+    <h3>6. capacitor.config.json を確認・修正 <span class="badge-masa">Masa</span></h3>
+    <div class="card">
+      <p><code>npx cap init</code>（手順 4）で自動生成された <code>capacitor.config.json</code> を開き、次の内容になっているか確認・修正してください。特に <code>webDir</code> が <code>www</code> であること。</p>
+      <div class="code-block">{
+  "appId": "com.masaenglishcompany.swallow",
+  "appName": "Swallow",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}</div>
+    </div>
+
+    <h3>7. iOS プロジェクトを追加 <span class="badge-masa">Masa</span></h3>
+    <div class="card">
+      <div class="code-block">npx cap add ios</div>
+    </div>
+
+    <h3>8. Android プロジェクトを追加（Android を出す場合） <span class="badge-masa">Masa</span></h3>
+    <div class="card">
+      <div class="code-block">npx cap add android</div>
+    </div>
+
+    <h3>9. ビルド内容を同期 <span class="badge-masa">Masa</span></h3>
+    <div class="card">
+      <div class="code-block">npx cap sync</div>
+    </div>
+
+    <h3>9.5. 開発中の反復ワークフロー <span class="badge-masa">Masa</span></h3>
+    <div class="card">
+      <p>HTML やアセットを修正したら、毎回以下を実行してから Xcode で再ビルドしてください。</p>
+      <div class="code-block"># www に変更をコピー
+cp index.html www/
+cp *.MOV www/ 2>/dev/null || true
+cp *.png www/ 2>/dev/null || true
+
+# ネイティブプロジェクトに反映
+npx cap copy ios
+# または npx cap sync ios</div>
+      <p>このサイクルがないと、修正のたびに手詰まりになります。</p>
+    </div>
+  </section>
+
+  <section id="phase3">
+    <h2><span class="step-num">3</span>iOS リリース</h2>
+
+    <h3>10. Xcode でプロジェクトを開く <span class="badge-ooide">大井手</span></h3>
+    <div class="card">
+      <div class="code-block">npx cap open ios</div>
+    </div>
+
+    <h3>11. Xcode で署名設定 <span class="badge-ooide">大井手</span></h3>
+    <div class="card">
+      <ul>
+        <li>左のプロジェクト一覧で「App」を選択</li>
+        <li>「Signing &amp; Capabilities」タブ</li>
+        <li>「Team」で自分の Apple Developer アカウントを選択</li>
+        <li>Bundle Identifier が <code>com.masaenglishcompany.swallow</code> になっているか確認</li>
+      </ul>
+    </div>
+
+    <h3>11.5. アプリアイコン設定（必須） <span class="badge-ooide">大井手</span></h3>
+    <div class="card">
+      <p><strong>致命的：</strong> App Store 提出には 1024×1024px のアイコンが必須です。設定しないと Archive → Upload の段階でエラーになります。</p>
+      <ul>
+        <li>Xcode で <code>ios/App/App/Assets.xcassets/AppIcon.appiconset</code> を開く</li>
+        <li>1024×1024px の PNG を用意し、AppIcon にドラッグ＆ドロップ</li>
+        <li>または、<a href="https://appicon.co" target="_blank">appicon.co</a> などで 1024px 画像から各サイズを生成して配置</li>
+      </ul>
+    </div>
+
+    <h3>12. 実機で動作確認（強く推奨） <span class="badge-ooide">大井手</span></h3>
+    <div class="card">
+      <p>Capacitor アプリは WebView の挙動がシミュレーターと実機で異なります。特に動画再生の autoplay 制限は実機で顕著です。動画中心のアプリのため、実機テストを強く推奨します。</p>
+      <ul>
+        <li>iPhone を USB で接続</li>
+        <li>上部のデバイスで iPhone を選択</li>
+        <li>▶ ボタンでビルド・実行</li>
+      </ul>
+    </div>
+
+    <h3>13. アーカイブを作成 <span class="badge-ooide">大井手</span></h3>
+    <div class="card">
+      <p>メニュー「Product」→「Archive」</p>
+      <p>完了まで待つ</p>
+    </div>
+
+    <h3>14. App Store Connect にアップロード <span class="badge-ooide">大井手</span></h3>
+    <div class="card">
+      <p>アーカイブ完了後、「Distribute App」→「App Store Connect」→「Upload」</p>
+      <p>証明書・プロファイルは自動で処理される場合が多い</p>
+    </div>
+
+    <h3>15. App Store Connect でアプリ情報を登録 <span class="badge-ooide">大井手</span></h3>
+    <div class="card">
+      <p><a href="https://appstoreconnect.apple.com" target="_blank">https://appstoreconnect.apple.com</a></p>
+      <ul>
+        <li>「マイ App」→「+」→ 新規アプリ作成</li>
+        <li>アプリ名、プライマリ言語、Bundle ID（<code>com.masaenglishcompany.swallow</code>）、カテゴリ、年齢制限</li>
+      </ul>
+      <p><strong>プライバシーポリシー URL（必須）：</strong> App Store 提出に URL が必須です。「追加で必要な素材があれば」では作れません。Vercel の <code>/privacy</code> や GitHub Pages などに HTML をホストし、URL を用意してください。テンプレートは「アプリ プライバシーポリシー テンプレート」で検索可。</p>
+      <p><strong>スクリーンショット：</strong> 必須サイズは iPhone 6.7"（1290×2796px）、6.5"（1242×2688px）、5.5"（1242×2208px）など。Xcode シミュレーターで該当デバイスを起動 → アプリを表示 → Cmd+S で保存。最低 3 枚以上、各サイズごとに用意。実機で撮る場合は解像度を確認。</p>
+    </div>
+
+    <h3>16. 審査に提出 <span class="badge-ooide">大井手</span></h3>
+    <div class="card">
+      <p>ビルドが処理されたら、そのビルドを選択して「審査に提出」</p>
+      <p>Apple の審査を待つ（通常 1〜数日）</p>
+    </div>
+  </section>
+
+  <section id="notes">
+    <h2>補足・注意事項</h2>
+
+    <div class="alert alert-info">
+      <div class="alert-title">大井手さん側で必要なもの</div>
+      <p style="margin-bottom: 0.5rem;">以下を事前に確認してください。揃っていないと進められません。</p>
+      <ul style="margin-bottom:0;">
+        <li>Mac（Xcode インストール済み）</li>
+        <li>Apple Developer アカウントへのアクセス権限</li>
+        <li>実機の iPhone（動作確認用）</li>
+      </ul>
+    </div>
+
+    <h3>コンテンツ準備（審査通過に影響） <span class="badge-masa">Masa</span></h3>
+    <div class="card">
+      <p><code>phrases</code> 配列に <code>(編集してください)</code> のプレースホルダーが残ったまま提出すると、Apple の Guideline 4.2「最低限の機能を満たしていない」でリジェクトされる可能性があります。提出前にコンテンツを完成させてください。</p>
+    </div>
+
+    <h3>Google Fonts・オフライン <span class="badge-masa">Masa</span></h3>
+    <div class="card">
+      <p>アプリは Sora, DM Sans, Noto Sans JP を fonts.googleapis.com から読み込んでいます。オフラインでは文字化け（フォールバック）します。リリースするなら、フォントをローカルにバンドルするか、フォールバック挙動を確認してください。</p>
+    </div>
+
+    <h3>iOS ステータスバー・セーフエリア <span class="badge-masa">Masa</span></h3>
+    <div class="card">
+      <p>ノッチ付き端末でヘッダーがステータスバーに被る可能性があります。<code>@capacitor/status-bar</code> プラグインの導入、または <code>env(safe-area-inset-top)</code> の適切な適用を検討してください。</p>
+    </div>
+  </section>
+
+</main>
+
+<footer style="text-align: center; padding: 2rem; border-top: 1px solid var(--border); color: var(--text-light); font-size: 0.8rem;">
+  MasaEnglish &copy; 2025
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,9 @@
+.vercel
+*.MOV
+*.mov
+*.mp4
+.DS_Store
+pipeline/credentials.json
+pipeline/config.py
+pipeline/output/
+pipeline/input/

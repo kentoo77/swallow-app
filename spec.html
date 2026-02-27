@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Swallow コンテンツ自動量産パイプライン — 実装仕様書</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --primary: #833ab4;
+      --primary-dark: #6b2d94;
+      --gradient: linear-gradient(135deg, #833ab4 0%, #c13584 50%, #e1306c 100%);
+      --text: #1e293b;
+      --text-light: #64748b;
+      --bg: #fafafa;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --code-bg: #f1f5f9;
+      --code-dark: #1e293b;
+      --accent-green: #059669;
+      --accent-blue: #2563eb;
+      --accent-amber: #d97706;
+      --accent-red: #dc2626;
+    }
+    body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); line-height: 1.8; font-size: 15px; }
+
+    header {
+      background: linear-gradient(135deg, #1a0a1f 0%, #2d1b4e 35%, #1a0a2a 70%, #0d0515 100%);
+      color: white; padding: 3.5rem 1.5rem; text-align: center; position: relative; overflow: hidden;
+    }
+    header::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 30% 50%, rgba(131,58,180,0.3) 0%, transparent 60%),
+                  radial-gradient(ellipse at 70% 50%, rgba(225,48,108,0.2) 0%, transparent 50%);
+    }
+    header > * { position: relative; z-index: 1; }
+    header .badge { display: inline-block; background: var(--gradient); color: white; padding: 0.375rem 1rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; margin-bottom: 1rem; letter-spacing: 0.05em; }
+    header h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; }
+    header p { color: rgba(255,255,255,0.8); font-size: 0.9rem; }
+    header .version { display: inline-block; margin-top: 1rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 6px; font-size: 0.7rem; color: rgba(255,255,255,0.7); }
+
+    nav {
+      background: var(--card); border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 100; overflow-x: auto;
+    }
+    nav ul { display: flex; list-style: none; max-width: 900px; margin: 0 auto; padding: 0 1rem; flex-wrap: wrap; }
+    nav li a {
+      display: block; padding: 0.875rem 0.625rem; color: var(--text-light);
+      text-decoration: none; font-size: 0.78rem; font-weight: 500; white-space: nowrap;
+      border-bottom: 2px solid transparent; transition: all 0.2s;
+    }
+    nav li a:hover { color: var(--primary); border-bottom-color: var(--primary); }
+
+    main { max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+    section { margin-bottom: 3rem; scroll-margin-top: 80px; }
+
+    h2 {
+      font-size: 1.2rem; font-weight: 700; color: var(--text);
+      margin-bottom: 1rem; padding-bottom: 0.75rem;
+      border-bottom: 3px solid var(--primary);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    h2 .icon { font-size: 1.1rem; }
+    h3 { font-size: 1rem; font-weight: 700; color: #2c5282; margin: 1.5rem 0 0.75rem; }
+    p { margin-bottom: 1rem; }
+
+    .card {
+      background: var(--card); border-radius: 0.75rem; padding: 1.5rem;
+      margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    /* Flow diagram */
+    .flow { display: flex; flex-direction: column; gap: 0; align-items: center; padding: 1.5rem 0; }
+    .flow-node {
+      display: flex; align-items: center; gap: 0.75rem;
+      background: var(--card); border: 2px solid var(--border); border-radius: 12px;
+      padding: 0.875rem 1.25rem; width: 100%; max-width: 440px;
+      transition: all 0.2s;
+    }
+    .flow-node:hover { border-color: var(--primary); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(131,58,180,0.1); }
+    .flow-node .num {
+      background: var(--gradient); color: white; font-size: 0.7rem; font-weight: 700;
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .flow-node .label { font-size: 0.88rem; font-weight: 600; }
+    .flow-node .tech { font-size: 0.7rem; color: var(--text-light); margin-top: 2px; }
+    .flow-arrow { color: var(--primary); font-size: 1.2rem; padding: 0.25rem 0; opacity: 0.5; }
+
+    /* Tables */
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.88rem; }
+    th, td { padding: 0.625rem 0.875rem; text-align: left; border: 1px solid var(--border); }
+    th { background: #f1f5f9; font-weight: 600; font-size: 0.82rem; }
+    td code { background: var(--code-bg); padding: 0.125rem 0.375rem; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.8em; }
+
+    /* Code blocks */
+    code { background: var(--code-bg); padding: 0.125rem 0.375rem; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.85em; }
+    .code-block {
+      background: var(--code-dark); color: #e2e8f0; border-radius: 0.625rem;
+      padding: 1.25rem 1.5rem; font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem; overflow-x: auto; white-space: pre; line-height: 1.7;
+      margin: 0.75rem 0; position: relative;
+    }
+    .code-block .lang {
+      position: absolute; top: 0.5rem; right: 0.75rem;
+      font-size: 0.6rem; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.1em;
+    }
+    .code-block .comment { color: #6b7280; }
+    .code-block .string { color: #a5d6ff; }
+    .code-block .keyword { color: #c084fc; }
+    .code-block .func { color: #7dd3fc; }
+
+    /* Alerts */
+    .alert { padding: 1rem 1.25rem; border-radius: 0.5rem; margin: 1rem 0; font-size: 0.88rem; }
+    .alert-title { font-weight: 700; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.375rem; }
+    .alert-info { background: #f8f6fc; border-left: 4px solid var(--primary); color: #4c1d95; }
+    .alert-success { background: #f0fdf4; border-left: 4px solid var(--accent-green); color: #14532d; }
+    .alert-warning { background: #fffbeb; border-left: 4px solid var(--accent-amber); color: #78350f; }
+    .alert-danger { background: #fef2f2; border-left: 4px solid var(--accent-red); color: #991b1b; }
+
+    /* Badges */
+    .badge-masa, .badge-kento { font-size: 0.68rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; margin-left: 0.25rem; }
+    .badge-masa { background: #dbeafe; color: #1d4ed8; }
+    .badge-kento { background: #d1fae5; color: #059669; }
+
+    /* Cost card */
+    .cost-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; margin: 1rem 0; }
+    .cost-item {
+      background: var(--card); border: 1px solid var(--border); border-radius: 0.75rem;
+      padding: 1.25rem; text-align: center;
+    }
+    .cost-item .price { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+    .cost-item .unit { font-size: 0.7rem; color: var(--text-light); margin-top: 4px; }
+    .cost-item .desc { font-size: 0.78rem; color: var(--text); margin-top: 0.5rem; font-weight: 600; }
+
+    /* Phase cards */
+    .phase-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin: 1rem 0; }
+    .phase-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 0.75rem;
+      padding: 1.25rem; position: relative; overflow: hidden;
+    }
+    .phase-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--gradient); }
+    .phase-card .phase-num { font-size: 0.65rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.375rem; }
+    .phase-card .phase-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.375rem; }
+    .phase-card .phase-desc { font-size: 0.78rem; color: var(--text-light); line-height: 1.6; }
+
+    /* Folder structure */
+    .folder-structure {
+      background: var(--code-dark); color: #e2e8f0; border-radius: 0.625rem;
+      padding: 1.25rem 1.5rem; font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem; line-height: 1.9;
+    }
+    .folder-structure .folder { color: #fbbf24; }
+    .folder-structure .file { color: #94a3b8; }
+    .folder-structure .new { color: #4ade80; }
+    .folder-structure .comment { color: #6b7280; font-style: italic; }
+
+    ul { margin: 0 0 1rem; padding-left: 1.5em; }
+    li { margin-bottom: 0.5rem; }
+    a { color: var(--accent-blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    strong { color: var(--text); }
+
+    footer { text-align: center; padding: 2rem; border-top: 1px solid var(--border); color: var(--text-light); font-size: 0.78rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="badge">Implementation Spec</div>
+  <h1>Swallow コンテンツ自動量産パイプライン</h1>
+  <p>先生が動画を撮るだけ。分割・翻訳・解説・クイズ生成を全自動化。</p>
+  <div class="version">v1.0 / 2026-02-27</div>
+</header>
+
+<nav>
+  <ul>
+    <li><a href="#overview">概要</a></li>
+    <li><a href="#flow">全体フロー</a></li>
+    <li><a href="#structure">ファイル構成</a></li>
+    <li><a href="#step1">Step 1: セットアップ</a></li>
+    <li><a href="#step2">Step 2: 文字起こし</a></li>
+    <li><a href="#step3">Step 3: 動画分割</a></li>
+    <li><a href="#step4">Step 4: 解説生成</a></li>
+    <li><a href="#step5">Step 5: スプレッドシート</a></li>
+    <li><a href="#step6">Step 6: メインスクリプト</a></li>
+    <li><a href="#usage">使い方</a></li>
+    <li><a href="#cost">コスト</a></li>
+    <li><a href="#roadmap">ロードマップ</a></li>
+    <li><a href="#troubleshoot">トラブルシューティング</a></li>
+  </ul>
+</nav>
+
+<main>
+
+  <!-- 概要 -->
+  <section id="overview">
+    <h2><span class="icon">&#9889;</span> 概要</h2>
+    <div class="card">
+      <p><strong>Swallow コンテンツパイプライン</strong>は、先生が撮影した動画1本から、英会話レッスンカードを全自動で生成するシステムです。</p>
+      <p><strong>10分の撮影 → 20〜30レッスンカード自動生成。月100フレーズ量産しても月75円。</strong></p>
+    </div>
+
+    <h3>担当分け</h3>
+    <table>
+      <tr><th>担当</th><th>やること</th></tr>
+      <tr><td><strong>Masaさん</strong> <span class="badge-masa">Masa</span></td><td>動画撮影、スプレッドシートで生成結果の最終チェック・修正</td></tr>
+      <tr><td><strong>健人さん</strong> <span class="badge-kento">健人</span></td><td>このドキュメントに沿ってシステム構築・運用</td></tr>
+    </table>
+  </section>
+
+  <!-- 全体フロー -->
+  <section id="flow">
+    <h2><span class="icon">&#128260;</span> 全体フロー</h2>
+    <div class="flow">
+      <div class="flow-node"><div class="num">1</div><div><div class="label">先生が10分動画を撮影</div><div class="tech">スマホ縦向き / フレーズを連続で話す</div></div></div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-node"><div class="num">2</div><div><div class="label">Whisper API で文字起こし</div><div class="tech">タイムスタンプ付き / 英語のみ自動抽出</div></div></div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-node"><div class="num">3</div><div><div class="label">ffmpeg でフレーズごとに動画分割</div><div class="tech">MOV → MP4変換 / ファイルサイズ 1/5〜1/10</div></div></div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-node"><div class="num">4</div><div><div class="label">Claude API で解説・クイズ・例文生成</div><div class="tech">日本語訳 / 文法解説 / 4択クイズ / 例文</div></div></div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-node"><div class="num">5</div><div><div class="label">Google Spreadsheet に自動登録</div><div class="tech">Masaさんが確認・修正するだけ</div></div></div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-node"><div class="num">6</div><div><div class="label">アプリ（Swallow）に反映</div><div class="tech">確認済みデータをアプリに取り込み</div></div></div>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-title">ポイント</div>
+      先生は何も気にせず自然に喋るだけでOK。言い直しても、間が空いても、日本語が混ざっても、全部システムが処理します。Whisperは「英語が話されている区間」だけを正確に拾います。
+    </div>
+  </section>
+
+  <!-- 必要なもの -->
+  <section id="requirements">
+    <h2><span class="icon">&#128295;</span> 必要なもの</h2>
+
+    <h3>APIキー</h3>
+    <table>
+      <tr><th>API</th><th>用途</th><th>取得先</th><th>料金目安</th></tr>
+      <tr><td><strong>OpenAI API</strong></td><td>Whisper（音声文字起こし）</td><td><a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a></td><td>10分で約6円</td></tr>
+      <tr><td><strong>Anthropic API</strong></td><td>Claude（解説生成）</td><td><a href="https://console.anthropic.com/" target="_blank">console.anthropic.com</a></td><td>1フレーズ約0.4円</td></tr>
+    </table>
+
+    <h3>ツール（ローカルPC）</h3>
+    <table>
+      <tr><th>ツール</th><th>用途</th><th>インストール</th></tr>
+      <tr><td><strong>Python 3.10+</strong></td><td>スクリプト実行</td><td><a href="https://www.python.org/" target="_blank">python.org</a></td></tr>
+      <tr><td><strong>ffmpeg</strong></td><td>動画分割・MP4変換</td><td><code>brew install ffmpeg</code></td></tr>
+    </table>
+
+    <h3>pip パッケージ</h3>
+    <div class="code-block"><span class="lang">bash</span>pip install openai anthropic google-api-python-client google-auth-oauthlib</div>
+  </section>
+
+  <!-- ファイル構成 -->
+  <section id="structure">
+    <h2><span class="icon">&#128193;</span> ファイル構成</h2>
+    <div class="folder-structure">
+<span class="folder">swallow/</span>
+├── <span class="folder new">pipeline/</span>                    <span class="comment">← 新規作成（コンテンツ生成システム）</span>
+│   ├── <span class="new">process_video.py</span>         <span class="comment">← メインスクリプト（これ1本で全部やる）</span>
+│   ├── <span class="new">config.py</span>                <span class="comment">← APIキー・設定</span>
+│   ├── <span class="new">requirements.txt</span>         <span class="comment">← pip パッケージ一覧</span>
+│   ├── <span class="new">credentials.json</span>         <span class="comment">← Google サービスアカウントキー</span>
+│   ├── <span class="folder new">input/</span>                   <span class="comment">← 撮影した動画を入れるフォルダ</span>
+│   ├── <span class="folder new">output/</span>                  <span class="comment">← 分割された動画・JSONが出力される</span>
+│   │   ├── <span class="folder">clips/</span>               <span class="comment">← フレーズごとの動画クリップ（MP4）</span>
+│   │   ├── <span class="file">*_lessons.json</span>       <span class="comment">← 生成されたフレーズデータ</span>
+│   │   └── <span class="file">*_review.csv</span>         <span class="comment">← Masaさん確認用CSV</span>
+│   └── <span class="folder new">prompts/</span>                 <span class="comment">← Claude APIに送るプロンプト</span>
+│       └── <span class="new">generate_lesson.txt</span>
+├── <span class="file">index.html</span>                   <span class="comment">← Swallow アプリ本体</span>
+├── <span class="file">spec.html</span>                    <span class="comment">← 本仕様書</span>
+├── <span class="file">manual.html</span>                  <span class="comment">← アプリ化マニュアル</span>
+└── <span class="file">content-pipeline.md</span>          <span class="comment">← 実装ガイド（Markdown版）</span>
+    </div>
+  </section>
+
+  <!-- Step 1 -->
+  <section id="step1">
+    <h2><span class="icon">1&#65039;&#8419;</span> Step 1: プロジェクトセットアップ <span class="badge-kento">健人</span></h2>
+    <div class="card">
+      <h3>ディレクトリ作成</h3>
+      <div class="code-block"><span class="lang">bash</span>cd 教材/swallow
+mkdir -p pipeline/input pipeline/output/clips pipeline/prompts</div>
+
+      <h3><code>pipeline/requirements.txt</code></h3>
+      <div class="code-block"><span class="lang">txt</span>openai>=1.0.0
+anthropic>=0.18.0
+google-api-python-client>=2.0.0
+google-auth-oauthlib>=1.0.0</div>
+
+      <h3><code>pipeline/config.py</code></h3>
+      <div class="code-block"><span class="lang">python</span><span class="keyword">import</span> os
+
+OPENAI_API_KEY = os.environ.get(<span class="string">"OPENAI_API_KEY"</span>, <span class="string">"sk-ここにキーを入れる"</span>)
+ANTHROPIC_API_KEY = os.environ.get(<span class="string">"ANTHROPIC_API_KEY"</span>, <span class="string">"sk-ant-ここにキーを入れる"</span>)
+
+<span class="comment"># Google Spreadsheet の設定</span>
+SPREADSHEET_ID = <span class="string">"ここにスプレッドシートIDを入れる"</span>
+SHEET_NAME = <span class="string">"フレーズ一覧"</span>
+
+<span class="comment"># 動画分割の設定</span>
+CLIP_PADDING_SEC = 0.3       <span class="comment"># フレーズ前後に余白を付ける秒数</span>
+MIN_PHRASE_LENGTH = 3        <span class="comment"># 最低3単語以上のフレーズだけ採用</span>
+OUTPUT_FORMAT = <span class="string">"mp4"</span>        <span class="comment"># 出力フォーマット（MOV → MP4 に変換）</span></div>
+
+      <div class="alert alert-warning">
+        <div class="alert-title">&#9888;&#65039; 注意</div>
+        <code>config.py</code> と <code>credentials.json</code> にはAPIキーが含まれます。<strong><code>.gitignore</code> に必ず追加</strong>してください。
+      </div>
+    </div>
+  </section>
+
+  <!-- Step 2 -->
+  <section id="step2">
+    <h2><span class="icon">2&#65039;&#8419;</span> Step 2: Whisper API で文字起こし <span class="badge-kento">健人</span></h2>
+    <div class="card">
+      <p>動画から音声を抽出し、Whisper APIに送信。英語フレーズごとに<strong>タイムスタンプ付き</strong>で返ってくる。</p>
+
+      <h3>処理内容</h3>
+      <ul>
+        <li>ffmpegで動画 → WAV音声に変換（16kHz モノラル）</li>
+        <li>Whisper APIに送信（<code>language="en"</code> で英語のみ認識）</li>
+        <li>日本語（「えーっと」「次は」等）は自動的に除外</li>
+        <li>3単語未満の短いフレーズもフィルタ</li>
+      </ul>
+
+      <h3>コード: 音声抽出 + 文字起こし</h3>
+      <div class="code-block"><span class="lang">python</span><span class="keyword">import</span> json, subprocess, os
+<span class="keyword">from</span> openai <span class="keyword">import</span> OpenAI
+<span class="keyword">from</span> config <span class="keyword">import</span> OPENAI_API_KEY, MIN_PHRASE_LENGTH
+
+client = OpenAI(api_key=OPENAI_API_KEY)
+
+
+<span class="keyword">def</span> <span class="func">extract_audio</span>(video_path: str, audio_path: str):
+    <span class="string">"""動画から音声を抽出（Whisper API用）"""</span>
+    subprocess.run([
+        <span class="string">"ffmpeg"</span>, <span class="string">"-i"</span>, video_path,
+        <span class="string">"-vn"</span>,                    <span class="comment"># 映像なし</span>
+        <span class="string">"-acodec"</span>, <span class="string">"pcm_s16le"</span>,   <span class="comment"># WAV形式</span>
+        <span class="string">"-ar"</span>, <span class="string">"16000"</span>,           <span class="comment"># 16kHz（Whisper推奨）</span>
+        <span class="string">"-ac"</span>, <span class="string">"1"</span>,               <span class="comment"># モノラル</span>
+        <span class="string">"-y"</span>, audio_path
+    ], check=True, capture_output=True)
+
+
+<span class="keyword">def</span> <span class="func">transcribe</span>(audio_path: str) -> list[dict]:
+    <span class="string">"""Whisper API で文字起こし（タイムスタンプ付き）"""</span>
+    <span class="keyword">with</span> open(audio_path, <span class="string">"rb"</span>) <span class="keyword">as</span> f:
+        response = client.audio.transcriptions.create(
+            model=<span class="string">"whisper-1"</span>,
+            file=f,
+            language=<span class="string">"en"</span>,
+            response_format=<span class="string">"verbose_json"</span>,
+            timestamp_granularities=[<span class="string">"segment"</span>]
+        )
+
+    phrases = []
+    <span class="keyword">for</span> segment <span class="keyword">in</span> response.segments:
+        text = segment.text.strip()
+        <span class="keyword">if</span> len(text.split()) < MIN_PHRASE_LENGTH:
+            <span class="keyword">continue</span>
+        <span class="keyword">if</span> any(<span class="string">'\u3040'</span> <= c <= <span class="string">'\u9fff'</span> <span class="keyword">for</span> c <span class="keyword">in</span> text):
+            <span class="keyword">continue</span>
+        phrases.append({
+            <span class="string">"text"</span>: text,
+            <span class="string">"start"</span>: round(segment.start, 2),
+            <span class="string">"end"</span>: round(segment.end, 2),
+        })
+    <span class="keyword">return</span> phrases</div>
+
+      <h3>Whisper API の戻り値イメージ</h3>
+      <div class="code-block"><span class="lang">json</span>[
+  {<span class="string">"text"</span>: <span class="string">"What do you wanna do?"</span>, <span class="string">"start"</span>: 0.5, <span class="string">"end"</span>: 2.8},
+  {<span class="string">"text"</span>: <span class="string">"I'm gonna grab a coffee."</span>, <span class="string">"start"</span>: 8.2, <span class="string">"end"</span>: 10.5},
+  {<span class="string">"text"</span>: <span class="string">"Can I get a large latte?"</span>, <span class="string">"start"</span>: 22.1, <span class="string">"end"</span>: 24.3}
+]</div>
+    </div>
+  </section>
+
+  <!-- Step 3 -->
+  <section id="step3">
+    <h2><span class="icon">3&#65039;&#8419;</span> Step 3: ffmpeg でフレーズごとに動画分割 <span class="badge-kento">健人</span></h2>
+    <div class="card">
+      <p>Whisperから得たタイムスタンプで動画を正確にカット。同時にMOV → MP4変換。</p>
+
+      <div class="code-block"><span class="lang">python</span><span class="keyword">from</span> config <span class="keyword">import</span> CLIP_PADDING_SEC, OUTPUT_FORMAT
+
+<span class="keyword">def</span> <span class="func">split_video</span>(video_path: str, phrases: list[dict], output_dir: str):
+    <span class="string">"""タイムスタンプに基づいて動画をフレーズごとに分割"""</span>
+    os.makedirs(output_dir, exist_ok=True)
+
+    <span class="keyword">for</span> i, phrase <span class="keyword">in</span> enumerate(phrases):
+        start = max(0, phrase[<span class="string">"start"</span>] - CLIP_PADDING_SEC)
+        end = phrase[<span class="string">"end"</span>] + CLIP_PADDING_SEC
+        duration = end - start
+        output_file = os.path.join(output_dir, f<span class="string">"clip_{i:03d}.{OUTPUT_FORMAT}"</span>)
+
+        subprocess.run([
+            <span class="string">"ffmpeg"</span>, <span class="string">"-i"</span>, video_path,
+            <span class="string">"-ss"</span>, str(start),
+            <span class="string">"-t"</span>, str(duration),
+            <span class="string">"-c:v"</span>, <span class="string">"libx264"</span>,          <span class="comment"># H.264（軽量化）</span>
+            <span class="string">"-crf"</span>, <span class="string">"23"</span>,               <span class="comment"># 品質</span>
+            <span class="string">"-preset"</span>, <span class="string">"fast"</span>,
+            <span class="string">"-c:a"</span>, <span class="string">"aac"</span>, <span class="string">"-b:a"</span>, <span class="string">"128k"</span>,
+            <span class="string">"-movflags"</span>, <span class="string">"+faststart"</span>,  <span class="comment"># Web再生向け最適化</span>
+            <span class="string">"-y"</span>, output_file
+        ], check=True, capture_output=True)
+
+        phrase[<span class="string">"video_file"</span>] = f<span class="string">"clip_{i:03d}.{OUTPUT_FORMAT}"</span>
+    <span class="keyword">return</span> phrases</div>
+
+      <div class="alert alert-success">
+        <div class="alert-title">&#9989; MOV → MP4 変換効果</div>
+        ファイルサイズが <strong>1/5〜1/10</strong> に削減。App Storeの200MB OTA制限回避にも有効。
+      </div>
+    </div>
+  </section>
+
+  <!-- Step 4 -->
+  <section id="step4">
+    <h2><span class="icon">4&#65039;&#8419;</span> Step 4: Claude API で解説・クイズ・例文を自動生成 <span class="badge-kento">健人</span></h2>
+    <div class="card">
+      <h3>プロンプト: <code>pipeline/prompts/generate_lesson.txt</code></h3>
+      <div class="code-block"><span class="lang">prompt</span>あなたは英語教育の専門家です。以下の英語フレーズについて、
+日本人の英語学習者向けにレッスンカードのデータを生成してください。
+
+## 入力フレーズ
+{phrase}
+
+## 出力形式（JSONで返してください）
+{
+  "en": "英語フレーズ（重要な表現を&lt;span class=\"hl\"&gt;タグ&lt;/span&gt;で囲む）",
+  "enPlain": "英語フレーズ（HTMLタグなし）",
+  "ja": "自然な日本語訳",
+  "category": "カテゴリ（日常会話/旅行/ビジネス/レストラン/空港/ショッピング/自己紹介/感情表現）",
+  "choices": ["正解の日本語訳", "紛らわしい誤訳1", "紛らわしい誤訳2", "紛らわしい誤訳3"],
+  "correctIndex": 0,
+  "explain": "&lt;p&gt;文法・ニュアンス・使われる場面の解説。&lt;b&gt;重要な単語&lt;/b&gt;はbold。&lt;/p&gt;",
+  "examples": [
+    {"en": "例文1の英語", "ja": "例文1の日本語訳"},
+    {"en": "例文2の英語", "ja": "例文2の日本語訳"},
+    {"en": "例文3の英語", "ja": "例文3の日本語訳"}
+  ]
+}
+
+## ルール
+- choicesの正解は必ずindex 0に入れる（システム側でシャッフル）
+- 誤訳は「ありそうで間違い」なものにする
+- 解説は中学〜高校レベルの学習者がわかる言葉で
+- 例文は日常で実際に使えるものを選ぶ
+- JSONのみ返すこと</div>
+
+      <h3>コード: 解説生成</h3>
+      <div class="code-block"><span class="lang">python</span><span class="keyword">import</span> anthropic
+<span class="keyword">from</span> config <span class="keyword">import</span> ANTHROPIC_API_KEY
+
+claude = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+
+<span class="keyword">def</span> <span class="func">generate_lesson_data</span>(phrases: list[dict]) -> list[dict]:
+    <span class="string">"""Claude API でフレーズごとに解説・クイズ・例文を生成"""</span>
+    template = <span class="func">load_prompt_template</span>()
+    results = []
+
+    <span class="keyword">for</span> i, phrase <span class="keyword">in</span> enumerate(phrases):
+        prompt = template.replace(<span class="string">"{phrase}"</span>, phrase[<span class="string">"text"</span>])
+        response = claude.messages.create(
+            model=<span class="string">"claude-sonnet-4-20250514"</span>,
+            max_tokens=1024,
+            messages=[{<span class="string">"role"</span>: <span class="string">"user"</span>, <span class="string">"content"</span>: prompt}]
+        )
+
+        raw = response.content[0].text.strip()
+        <span class="keyword">if</span> raw.startswith(<span class="string">"```"</span>):
+            raw = raw.split(<span class="string">"\n"</span>, 1)[1].rsplit(<span class="string">"```"</span>, 1)[0]
+
+        <span class="keyword">try</span>:
+            lesson = json.loads(raw)
+            lesson[<span class="string">"video"</span>] = phrase.get(<span class="string">"video_file"</span>, <span class="string">""</span>)
+            results.append(lesson)
+        <span class="keyword">except</span> json.JSONDecodeError:
+            print(f<span class="string">"  [WARN] JSON解析失敗: {phrase['text'][:40]}..."</span>)
+    <span class="keyword">return</span> results</div>
+
+      <h3>Claude API が自動生成するもの</h3>
+      <table>
+        <tr><th>項目</th><th>内容</th></tr>
+        <tr><td>日本語訳</td><td>自然な日本語訳</td></tr>
+        <tr><td>解説</td><td>文法ポイント・ニュアンス・使用場面（HTML形式）</td></tr>
+        <tr><td>4択クイズ</td><td>正解 + 紛らわしい誤答3つ</td></tr>
+        <tr><td>例文</td><td>実用的な例文3つ（英語 + 日本語訳）</td></tr>
+        <tr><td>カテゴリ</td><td>日常会話 / 旅行 / ビジネス 等を自動判定</td></tr>
+        <tr><td>ハイライト</td><td>重要表現にHTMLタグ付与</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- Step 5 -->
+  <section id="step5">
+    <h2><span class="icon">5&#65039;&#8419;</span> Step 5: Google Spreadsheet に自動登録 <span class="badge-kento">健人</span></h2>
+    <div class="card">
+      <h3>事前準備</h3>
+      <ol>
+        <li>Google Cloud Console でプロジェクト作成</li>
+        <li>Google Sheets API を有効化</li>
+        <li>サービスアカウント作成 → JSONキーをダウンロード → <code>pipeline/credentials.json</code> に配置</li>
+        <li>スプレッドシートを作成し、サービスアカウントのメールアドレスに<strong>編集権限</strong>を付与</li>
+      </ol>
+
+      <h3>スプレッドシートの列構成</h3>
+      <table>
+        <tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F〜I</th><th>J</th><th>K</th></tr>
+        <tr><td>ステータス</td><td>先生ID</td><td>英語</td><td>日本語訳</td><td>カテゴリ</td><td>選択肢1〜4</td><td>解説</td><td>動画ファイル</td></tr>
+      </table>
+
+      <div class="alert alert-info">
+        <div class="alert-title">&#128204; Masaさんの確認フロー</div>
+        <ol style="margin-bottom:0;">
+          <li>スプレッドシートを開く</li>
+          <li>「未確認」のフレーズを上から確認</li>
+          <li>日本語訳・解説がおかしければ修正</li>
+          <li>OKなら「確認済み」に変更</li>
+        </ol>
+      </div>
+
+      <h3>コード: スプレッドシート連携</h3>
+      <div class="code-block"><span class="lang">python</span><span class="keyword">from</span> google.oauth2.service_account <span class="keyword">import</span> Credentials
+<span class="keyword">from</span> googleapiclient.discovery <span class="keyword">import</span> build
+<span class="keyword">from</span> config <span class="keyword">import</span> SPREADSHEET_ID, SHEET_NAME
+
+<span class="keyword">def</span> <span class="func">upload_to_spreadsheet</span>(lessons: list[dict], teacher_id: str):
+    creds = Credentials.from_service_account_file(
+        <span class="string">"credentials.json"</span>,
+        scopes=[<span class="string">"https://www.googleapis.com/auth/spreadsheets"</span>]
+    )
+    service = build(<span class="string">"sheets"</span>, <span class="string">"v4"</span>, credentials=creds)
+
+    rows = []
+    <span class="keyword">for</span> lesson <span class="keyword">in</span> lessons:
+        choices = lesson.get(<span class="string">"choices"</span>, [<span class="string">""</span>]*4)
+        rows.append([
+            <span class="string">"未確認"</span>, teacher_id,
+            lesson.get(<span class="string">"enPlain"</span>, <span class="string">""</span>), lesson.get(<span class="string">"ja"</span>, <span class="string">""</span>),
+            lesson.get(<span class="string">"category"</span>, <span class="string">""</span>),
+            *[choices[i] <span class="keyword">if</span> i < len(choices) <span class="keyword">else</span> <span class="string">""</span> <span class="keyword">for</span> i <span class="keyword">in</span> range(4)],
+            lesson.get(<span class="string">"explain"</span>, <span class="string">""</span>), lesson.get(<span class="string">"video"</span>, <span class="string">""</span>),
+        ])
+
+    service.spreadsheets().values().append(
+        spreadsheetId=SPREADSHEET_ID,
+        range=f<span class="string">"{SHEET_NAME}!A:K"</span>,
+        valueInputOption=<span class="string">"RAW"</span>,
+        insertDataOption=<span class="string">"INSERT_ROWS"</span>,
+        body={<span class="string">"values"</span>: rows},
+    ).execute()</div>
+    </div>
+  </section>
+
+  <!-- Step 6 -->
+  <section id="step6">
+    <h2><span class="icon">6&#65039;&#8419;</span> Step 6: メインスクリプト <span class="badge-kento">健人</span></h2>
+    <div class="card">
+      <p>全ステップをつなげるメインスクリプト。コマンド1発で動画 → レッスンカード生成。</p>
+
+      <div class="code-block"><span class="lang">python</span><span class="keyword">def</span> <span class="func">main</span>():
+    parser = argparse.ArgumentParser(description=<span class="string">"Swallow コンテンツ自動生成"</span>)
+    parser.add_argument(<span class="string">"video"</span>, help=<span class="string">"入力動画ファイルのパス"</span>)
+    parser.add_argument(<span class="string">"--teacher"</span>, default=<span class="string">"masa"</span>, help=<span class="string">"先生ID"</span>)
+    parser.add_argument(<span class="string">"--no-upload"</span>, action=<span class="string">"store_true"</span>)
+    args = parser.parse_args()
+
+    <span class="comment"># [1/4] 音声抽出</span>
+    <span class="func">extract_audio</span>(args.video, audio_path)
+
+    <span class="comment"># [2/4] Whisper で文字起こし</span>
+    phrases = <span class="func">transcribe</span>(audio_path)
+
+    <span class="comment"># [3/4] 動画分割</span>
+    phrases = <span class="func">split_video</span>(args.video, phrases, output_dir)
+
+    <span class="comment"># [4/4] Claude で解説生成</span>
+    lessons = <span class="func">generate_lesson_data</span>(phrases)
+
+    <span class="comment"># JSON保存 + CSV出力 + スプレッドシートアップロード</span>
+    <span class="func">save_results</span>(lessons, args)</div>
+
+      <p>完全なコードは <a href="content-pipeline.md">content-pipeline.md</a> を参照。</p>
+    </div>
+  </section>
+
+  <!-- 使い方 -->
+  <section id="usage">
+    <h2><span class="icon">&#128640;</span> 使い方</h2>
+    <div class="card">
+      <h3>基本コマンド</h3>
+      <div class="code-block"><span class="lang">bash</span>cd 教材/swallow/pipeline
+
+<span class="comment"># まさ先生の動画を処理</span>
+python process_video.py input/masa_recording.MOV --teacher masa
+
+<span class="comment"># みき先生の動画を処理</span>
+python process_video.py input/miki_recording.MOV --teacher miki
+
+<span class="comment"># スプレッドシートに上げずにローカルだけで確認</span>
+python process_video.py input/test.MOV --teacher masa --no-upload</div>
+
+      <h3>実行結果イメージ</h3>
+      <div class="code-block"><span class="lang">output</span>============================================================
+Swallow コンテンツ自動生成
+入力: input/masa_recording.MOV
+先生: masa
+============================================================
+
+[1/4] 音声抽出中...
+音声抽出完了: output/masa_recording_audio.wav
+
+[2/4] 文字起こし中（Whisper API）...
+抽出されたフレーズ数: 24
+
+[3/4] 動画分割中（ffmpeg）...
+  [1/24] What do you wanna do?... → clip_000.mp4
+  [2/24] I'm gonna grab a coffee.... → clip_001.mp4
+  ...
+
+[4/4] 解説生成中（Claude API）...
+  [1/24] What do you wanna do?... → 解説生成OK
+  ...
+
+============================================================
+完了！ 24 フレーズのレッスンカードが生成されました
+============================================================</div>
+    </div>
+
+    <div class="card">
+      <h3>Masaさんの撮影ガイド <span class="badge-masa">Masa</span></h3>
+      <table>
+        <tr><th>項目</th><th>推奨</th></tr>
+        <tr><td>スマホの向き</td><td>縦向き（アプリと同じ）</td></tr>
+        <tr><td>1回の撮影量</td><td>20〜30フレーズ（約10分）</td></tr>
+        <tr><td>フレーズの間</td><td>2秒以上空ける（長くてもOK）</td></tr>
+        <tr><td>言い直し</td><td>OK（システムが処理）</td></tr>
+        <tr><td>日本語混在</td><td>OK（自動除外される）</td></tr>
+        <tr><td>背景</td><td>シンプル（毎回同じ場所でOK）</td></tr>
+        <tr><td>視線</td><td>カメラ目線（話しかけてくる感覚）</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- コスト -->
+  <section id="cost">
+    <h2><span class="icon">&#128176;</span> コスト見積もり</h2>
+    <p>月100フレーズ量産した場合：</p>
+    <div class="cost-grid">
+      <div class="cost-item">
+        <div class="price">&#165;30</div>
+        <div class="unit">/月</div>
+        <div class="desc">Whisper API</div>
+      </div>
+      <div class="cost-item">
+        <div class="price">&#165;45</div>
+        <div class="unit">/月</div>
+        <div class="desc">Claude API (Sonnet)</div>
+      </div>
+      <div class="cost-item">
+        <div class="price">&#165;0</div>
+        <div class="unit">/月</div>
+        <div class="desc">Vercel / Spreadsheet</div>
+      </div>
+      <div class="cost-item" style="border-color: var(--primary);">
+        <div class="price" style="font-size: 2rem;">&#165;75</div>
+        <div class="unit">/月 合計</div>
+        <div class="desc">100フレーズ分</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ロードマップ -->
+  <section id="roadmap">
+    <h2><span class="icon">&#128506;</span> ロードマップ</h2>
+    <div class="phase-grid">
+      <div class="phase-card">
+        <div class="phase-num">Phase 1（今回）</div>
+        <div class="phase-title">コンテンツ自動生成</div>
+        <div class="phase-desc">動画 → Whisper → ffmpeg → Claude → スプレッドシート。コマンド1発で全自動。</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-num">Phase 2</div>
+        <div class="phase-title">アプリ自動反映</div>
+        <div class="phase-desc">GASでスプレッドシートをJSON API化。アプリが起動時にデータ取得。ハードコード廃止。</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-num">Phase 3</div>
+        <div class="phase-title">動画クラウドホスティング</div>
+        <div class="phase-desc">MP4をCloudflare R2にアップロード。App Store 200MB制限を回避。</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-num">Phase 4</div>
+        <div class="phase-title">管理画面</div>
+        <div class="phase-desc">Webベースの管理画面。プレビュー・公開/非公開の切り替え。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- トラブルシューティング -->
+  <section id="troubleshoot">
+    <h2><span class="icon">&#128679;</span> トラブルシューティング</h2>
+    <div class="card">
+      <h3>「フレーズが検出されませんでした」</h3>
+      <ul>
+        <li>動画に英語の音声が入っているか確認</li>
+        <li>音声が小さすぎないか（マイクに近づいて話す）</li>
+        <li><code>language="en"</code> により日本語のみの区間は正常に除外される</li>
+      </ul>
+
+      <h3>「JSON解析失敗」</h3>
+      <ul>
+        <li>Claude APIの応答がJSON以外を含んでいる場合に発生</li>
+        <li>プロンプト末尾に「JSONのみ返すこと」を強調</li>
+        <li>失敗したフレーズは手動でスプレッドシートに追加</li>
+      </ul>
+
+      <h3>動画クリップの前後が切れている</h3>
+      <ul>
+        <li><code>config.py</code> の <code>CLIP_PADDING_SEC</code> を <code>0.3</code> → <code>0.5</code> に増やす</li>
+      </ul>
+
+      <h3>ffmpegエラー</h3>
+      <ul>
+        <li><code>brew install ffmpeg</code> でインストール済みか確認</li>
+        <li><code>ffmpeg -version</code> で動作確認</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- リンク -->
+  <section id="links">
+    <h2><span class="icon">&#128279;</span> 関連ファイル</h2>
+    <div class="card">
+      <table>
+        <tr><th>ファイル</th><th>説明</th></tr>
+        <tr><td><a href="content-pipeline.md">content-pipeline.md</a></td><td>実装ガイド（Markdown版・完全なコード付き）</td></tr>
+        <tr><td><a href="index.html">index.html</a></td><td>Swallow アプリ本体</td></tr>
+        <tr><td><a href="manual.html">manual.html</a></td><td>アプリ化マニュアル（iOS/Android）</td></tr>
+        <tr><td><a href="docs/index.html">docs/index.html</a></td><td>手順書（1〜23）</td></tr>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  MasaEnglish &copy; 2025 &mdash; Swallow Content Pipeline Spec v1.0
+</footer>
+
+</body>
+</html>

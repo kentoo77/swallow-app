@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>河野さんへの依頼 — Swallow アプリ化</title>
+    <style>
+        body { font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif; line-height: 1.7; max-width: 720px; margin: 0 auto; padding: 40px 24px; color: #333; }
+        h1 { font-size: 1.5rem; border-bottom: 2px solid #833ab4; padding-bottom: 8px; margin-bottom: 24px; }
+        h2 { font-size: 1.1rem; margin-top: 32px; margin-bottom: 12px; color: #555; }
+        p { margin: 0 0 12px; }
+        ul { margin: 0 0 16px; padding-left: 1.5em; }
+        li { margin-bottom: 6px; }
+        .box { background: #f8f6fc; border: 1px solid #e0d8f0; border-radius: 12px; padding: 20px; margin: 20px 0; }
+        .box strong { color: #833ab4; }
+        .step { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin: 12px 0; }
+        .step-num { display: inline-block; background: #833ab4; color: #fff; font-size: 0.8rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; margin-right: 8px; }
+        code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+        .note { font-size: 0.9rem; color: #666; margin-top: 24px; }
+    </style>
+</head>
+<body>
+    <h1>河野さんへの依頼 — Swallow アプリ化（Step 7〜8）</h1>
+
+    <div class="box">
+        <p><strong>お願いしたいこと</strong></p>
+        <p>Capacitor で作成した Swallow の iOS アプリについて、<strong>Step 7（Xcode での署名・実機ビルド）と Step 8（アーカイブ・App Store Connect へのアップロード）</strong>をお願いしたいです。</p>
+    </div>
+
+    <h2>依頼内容の詳細</h2>
+
+    <div class="step">
+        <span class="step-num">Step 7</span>
+        <strong>Xcode での設定・実機ビルド</strong>
+        <ul>
+            <li>Bundle Identifier の確認・修正</li>
+            <li>Signing & Capabilities で開発者アカウントの設定</li>
+            <li>アプリアイコン（AppIcon）の設定</li>
+            <li>実機でのビルド・実行と動作確認</li>
+            <li>ビルドエラーが出た場合の解消</li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <span class="step-num">Step 8</span>
+        <strong>アーカイブと App Store Connect へのアップロード</strong>
+        <ul>
+            <li>Product → Archive の実行</li>
+            <li>Distribute App → App Store Connect を選択</li>
+            <li>証明書・プロビジョニングプロファイルの確認</li>
+            <li>App Store Connect へのアップロード完了まで</li>
+        </ul>
+    </div>
+
+    <h2>プロジェクト情報</h2>
+    <ul>
+        <li><strong>プロジェクト名</strong>: Swallow</li>
+        <li><strong>プロジェクトパス</strong>: <code>教材/swallow/</code></li>
+        <li><strong>Web アプリの場所</strong>: <code>swallow/</code>（index.html がルート）</li>
+        <li><strong>App ID</strong>: <code>com.masaenglishcompany.swallow</code></li>
+    </ul>
+
+    <h2>河野さん側で必要なもの</h2>
+    <ul>
+        <li>Mac（Xcode インストール済み）</li>
+        <li>Apple Developer アカウントへのアクセス権限（または、こちらのアカウント情報の共有）</li>
+        <li>実機の iPhone（動作確認用）</li>
+    </ul>
+
+    <h2>補足</h2>
+    <p>Step 1〜6（Capacitor プロジェクトの作成、Web アプリの配置、設定ファイルの編集など）はこちらで対応済みの想定です。プロジェクトをお渡しした時点で、<code>npx cap open ios</code> で Xcode が開ける状態になっています。</p>
+    <p>アプリアイコンやプライバシーポリシー URL など、追加で必要な素材があればお知らせください。</p>
+
+    <p class="note">よろしくお願いいたします。</p>
+
+    <p style="margin-top: 32px; padding-top: 20px; border-top: 1px solid #e0d8f0;"><a href="manual.html" style="color: #833ab4; font-weight: 600;">完全マニュアル（Step 1〜8・リンク・ファイル構成）</a></p>
+</body>
+</html>

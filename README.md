@@ -12,7 +12,8 @@ Instagram風UIの英語リスニング学習アプリ。先生の動画をショ
 |------|------|
 | フロントエンド | 単一HTMLファイル（`index.html`）、バニラJS、CSS |
 | ホスティング | Vercel（静的サイト） |
-| データ保存 | localStorage（端末別） |
+| データ保存 | Firestore（ログイン時） + localStorage（フォールバック） |
+| 認証 | Firebase Authentication（Googleログイン） |
 | App ID | `com.masaenglishcompany.swallow` |
 
 ---
@@ -48,6 +49,9 @@ swallow/
 - 学習履歴画面 — ステータス切替（聞き取れた / 要復習 / 保存）
 - オンボーディング（ヒアリング → スコアに基づく先生の自動フォロー）
 - スプラッシュ画面アニメーション
+- Googleログイン（Firebase Authentication）
+- Firestore連携（端末間データ同期）
+- localStorage → Firestore 自動マイグレーション（初回ログイン時）
 
 ### UI/機能改善（2025/02/27 実装）
 
@@ -137,48 +141,7 @@ python process_video.py input/masa_recording.MOV --teacher masa
 
 ## 次の開発予定
 
-### 1. Googleログイン + Firestore連携
-
-#### 目的
-- ユーザー認証によるアクセス制御
-- 端末をまたいだ学習データの同期
-
-#### Firebaseセットアップ手順
-1. [Firebase Console](https://console.firebase.google.com/) でプロジェクト作成
-2. ウェブアプリ追加 → 設定情報（apiKey, authDomain等）を取得
-3. Authentication → Googleログインを有効化
-4. Firestore Database → `asia-northeast1`（東京）で作成
-
-#### 実装内容
-- Firebase SDK（CDN）読み込み
-- ログイン画面の追加（未認証時に表示）
-- localStorage → Firestore への移行
-  - Firestoreパス: `users/{uid}/settings`, `users/{uid}/reviews`
-- 設定画面にログアウトボタン追加
-
-#### Firestoreセキュリティルール
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /users/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-  }
-}
-```
-
-#### 認証フロー
-```
-アプリ起動
-  → Firebase Auth 状態チェック
-  → 未認証 → ログイン画面（Googleボタン）
-           → Google認証ポップアップ
-           → 成功 → Firestoreからデータ読み込み → ホーム画面
-  → 認証済み → Firestoreからデータ読み込み → ホーム画面
-```
-
-### 2. パイプライン Phase 2〜4
+### パイプライン Phase 2〜4
 
 | Phase | 内容 |
 |-------|------|

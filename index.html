@@ -1312,12 +1312,12 @@
 // Firebase Configuration
 // ============================================================
 var firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.firebasestorage.app",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyAkG92tOE0MI2EPE1Oj-O-x_b7y4mctWVg",
+    authDomain: "masa-english-dev.firebaseapp.com",
+    projectId: "masa-english-dev",
+    storageBucket: "masa-english-dev.appspot.com",
+    messagingSenderId: "256754087187",
+    appId: "1:256754087187:web:b6bdc9367ff824e33716e6"
 };
 firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
@@ -2086,7 +2086,12 @@ firebase.auth().onAuthStateChanged(function(user){
             return loadAllFromFirestore(user.uid);
         }).then(function(){
             updateUI();
-            dismissSplash();
+            if(splashDismissed){
+                // Already past splash (e.g. user just logged in)
+                afterSplash();
+            } else {
+                dismissSplash();
+            }
         });
     } else {
         dismissSplash();
